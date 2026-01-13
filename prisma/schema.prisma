@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id // Matches Supabase Auth ID
+  fullName  String
+  username  String   @unique
+  avatarUrl String?
+  bio       String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendances   Attendance[]
+  weeklyWinners WeeklyWinner[]
+}
+
+model Attendance {
+  id            String    @id @default(uuid())
+  userId        String
+  date          DateTime  // Date only (00:00:00) for grouping
+  checkIn       DateTime  @default(now())
+  checkOut      DateTime?
+  totalDuration Int       @default(0) // Seconds
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model Menu {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  wonInWeeks  WeeklyWinner[]
+}
+
+model WeeklyWinner {
+  id        String   @id @default(uuid())
+  weekStart DateTime // The Monday of the week won
+  userId    String
+  menuId    String?  // Prize won
+  videoUrl  String?  // Optional: Recording of the spin?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  menu Menu? @relation(fields: [menuId], references: [id])
+
+  @@unique([weekStart, userId])
+}
