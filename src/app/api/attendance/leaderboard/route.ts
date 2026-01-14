@@ -30,7 +30,7 @@ export async function GET() {
     // akumulasi durasi per user
     const map: Record<
         string,
-        { userId: string; fullName: string; username: string; avatarUrl: string | null; total: number }
+        { userId: string; fullName: string; username: string; avatarUrl: string | null; role: string; total: number }
     > = {};
 
     for (const item of data) {
@@ -40,6 +40,7 @@ export async function GET() {
                 fullName: item.user.fullName,
                 username: item.user.username,
                 avatarUrl: item.user.avatarUrl,
+                role: item.user.role,
                 total: 0,
             };
         }
@@ -47,9 +48,11 @@ export async function GET() {
         map[item.userId].total += item.totalDuration;
     }
 
-    const leaderboard = Object.values(map)
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 10); // top 10
+    const all = Object.values(map).sort((a, b) => b.total - a.total);
 
-    return NextResponse.json(leaderboard);
+    // Pisahkan user biasa dan admin
+    const users = all.filter(u => u.role !== 'ADMIN').slice(0, 10); // user top 10
+    const admins = all.filter(u => u.role === 'ADMIN'); // admin list (usually few)
+
+    return NextResponse.json({ users, admins });
 }

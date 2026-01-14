@@ -45,16 +45,43 @@ export async function PUT(req: Request) {
 
     const body = await req.json();
 
-    // Verify username uniqueness if changed (omitted for brevity, assume simple update)
+    // 1. Get current avatar URL to delete later if needed
+    const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+    const oldAvatarUrl = dbUser?.avatarUrl;
+
+    // 2. Update Database
     const updated = await prisma.user.update({
         where: { id: user.id },
         data: {
             fullName: body.fullName,
             username: body.username,
-            bio: body.bio
-            // avatarUrl logic separate usually
+            bio: body.bio,
+            avatarUrl: body.avatarUrl // Allow updating avatarUrl
         }
     });
+
+    // 3. Delete old avatar if it changed and existed
+    if (body.avatarUrl && oldAvatarUrl && body.avatarUrl !== oldAvatarUrl) {
+        // Extract path from URL (assuming standard Supabase Storage URL format)
+        // URL format: .../storage/v1/object/public/avatars/path/to/file
+        try {
+            const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
+            // Basic extraction: get everything after 'avatars/'
+            const parts = oldAvatarUrl.split('/avatars/');
+            if (parts.length === 2) {
+                const oldPath = parts[1]; // e.g. "public/user_123/123456.png"
+                console.log('Deleting old avatar:', oldPath);
+
+                // Using service role might be safer for deletion guarantee, but let's try standard client first
+                // or just fire and forget.
+                await supabase.storage.from('avatars').remove([oldPath]);
+            }
+        } catch (e) {
+            console.error('Failed to delete old avatar:', e);
+            // Don't fail the request just because cleanup failed
+        }
+    }
 
     return NextResponse.json(updated);
 }

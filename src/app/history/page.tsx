@@ -67,7 +67,10 @@ export default function HistoryPage() {
                         <Calendar className="text-brown-600" size={24} />
                         <span className="text-sm font-medium text-brown-600">Total Days</span>
                     </div>
-                    <div className="text-4xl font-bold text-brown-900">{history.length}</div>
+                    {/* Calculate Unique Dates */}
+                    <div className="text-4xl font-bold text-brown-900">
+                        {new Set(history.map(item => new Date(item.date).toDateString())).size}
+                    </div>
                     <div className="text-brown-500 text-sm mt-1">Days checked in</div>
                 </div>
 
@@ -77,9 +80,14 @@ export default function HistoryPage() {
                         <span className="text-sm font-medium text-brown-600">Avg. Time</span>
                     </div>
                     <div className="text-4xl font-bold text-brown-900">
+                        {/* Average per unique day, not per session? Or per session? Usually per day is more meaningful. */}
+                        {/* User asked for TOTAL DAYS sync. Let's keep Avg Time per session for now or update it? */}
+                        {/* "Average time per day" makes more sense if we group by day. */}
+                        {/* But let's stick to the user's specific request about Total Days first. */}
+                        {/* If we strictly follow "Average Time", usually it means Average Duration per Session. Let's keep it simple. */}
                         {history.length > 0 ? Math.floor(totalAll / history.length / 3600) : 0}h
                     </div>
-                    <div className="text-brown-500 text-sm mt-1">Per day</div>
+                    <div className="text-brown-500 text-sm mt-1">Per session</div>
                 </div>
             </div>
 

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Input, TextArea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { User, Mail, AtSign, Edit2, Save, X, LogOut } from 'lucide-react';
+import { User, Mail, AtSign, Edit2, Save, X, LogOut, Camera } from 'lucide-react';
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -59,6 +59,67 @@ export default function ProfilePage() {
         router.push('/login');
     }
 
+    async function handleAvatarUpload(event: React.ChangeEvent<HTMLInputElement>) {
+        if (!event.target.files || event.target.files.length === 0) return;
+
+        const file = event.target.files[0];
+        setLoading(true);
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("No session");
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `public/${session.user.id}/${Date.now()}.${fileExt}`;
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('images')
+                .upload(fileName, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('images')
+                .getPublicUrl(fileName);
+
+            // Update local state (will be saved when clicking Save Changes, or we can auto-update? 
+            // The plan said "Update URL... delete old". This usually implies saving immediately.
+            // Let's update ONLY the local state so the user sees preview, 
+            // BUT for "delete old" logic to work best on backend, we should technically save the whole profile or just the avatar.
+            // To keep it simple and consistent with "Edit Profile" flow, we'll just set it in state.
+            // But wait, if they cancel, we uploaded a file for nothing.
+            // Better UX: Upload AND Save immediately for avatar, or handle temp files.
+            // Given "User request: ... saat ganti, foto lama ... terhapus", immediate save makes sense for Avatar.
+
+            // LET'S AUTO-SAVE AVATAR CHANGE
+            setProfile(prev => ({ ...prev, avatarUrl: publicUrl }));
+
+            // Trigger save immediately for avatar
+            await fetch('/api/attendance/me', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    ...profile,
+                    avatarUrl: publicUrl
+                    // We include other profile fields too so they don't get overwritten with old state if they were being edited
+                })
+            });
+
+            alert("Foto profil berhasil diganti!");
+
+        } catch (e) {
+            console.error(e);
+            alert("Gagal upload foto");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     async function saveProfile(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
@@ -75,7 +136,8 @@ export default function ProfilePage() {
                 body: JSON.stringify({
                     fullName: profile.fullName,
                     username: profile.username,
-                    bio: profile.bio
+                    bio: profile.bio,
+                    avatarUrl: profile.avatarUrl // Include avatarUrl
                 })
             });
             setIsEditing(false);
@@ -102,13 +164,33 @@ export default function ProfilePage() {
                     {/* Avatar Card */}
                     <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-8">
                         <div className="flex flex-col items-center text-center">
-                            <div className="w-32 h-32 rounded-full border-4 border-mustard-500 bg-brown-100 flex items-center justify-center relative mb-4 shadow-lg">
-                                {profile.avatarUrl ? (
-                                    <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                    <User size={48} className="text-brown-400" />
+                            <div className="relative group">
+                                <div className="w-32 h-32 rounded-full border-4 border-mustard-500 bg-brown-100 flex items-center justify-center relative mb-4 shadow-lg overflow-hidden">
+                                    {profile.avatarUrl ? (
+                                        <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                        <User size={48} className="text-brown-400" />
+                                    )}
+                                </div>
+
+                                {/* Edit Overlay */}
+                                {isEditing && (
+                                    <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors z-10">
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleAvatarUpload}
+                                            disabled={loading}
+                                        />
+                                        <div className="text-white flex flex-col items-center gap-1 animate-fadeIn">
+                                            <Camera size={24} className="text-white drop-shadow-md" />
+                                            <span className="text-xs font-bold uppercase tracking-wider shadow-sm drop-shadow-md">Change</span>
+                                        </div>
+                                    </label>
                                 )}
                             </div>
+
                             <h2 className="text-2xl font-bold text-brown-900 mb-1">{profile.fullName || 'Loading...'}</h2>
                             <p className="text-brown-600 mb-4">@{profile.username || '...'}</p>
 

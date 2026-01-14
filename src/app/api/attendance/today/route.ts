@@ -5,12 +5,14 @@ export async function GET() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Fetch ONLY COMPLETED sessions (checked out)
+    // Fetch RECENT COMPLETED sessions (checked out)
+    // We remove the strict 'date' filter because it might mismatch if timezone is different
+    // Instead, let's just show the last 10 activity logs
     const data = await prisma.attendance.findMany({
         where: {
-            date: today,
             checkOut: { not: null }
         },
+        take: 10, // Limit to 10 recent activities
         include: {
             user: true,
         },

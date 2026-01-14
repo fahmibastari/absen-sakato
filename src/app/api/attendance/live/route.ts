@@ -8,7 +8,6 @@ export async function GET() {
     // Fetch users who have checked in today but NOT checked out
     const liveSessions = await prisma.attendance.findMany({
         where: {
-            date: today,
             checkOut: null, // Still active
         },
         include: {
