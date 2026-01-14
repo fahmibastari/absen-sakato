@@ -11,6 +11,7 @@ export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const [role, setRole] = useState<string | null>(null);
+    const [hasNewPosts, setHasNewPosts] = useState(false);
 
     useEffect(() => {
         // Check cache first to prevent flickering
@@ -39,18 +40,6 @@ export default function Sidebar() {
         checkRole();
     }, [pathname]); // Re-check on path change to be safe, but rely on cache
 
-    async function handleLogout() {
-        localStorage.removeItem('user_role');
-        await supabase.auth.signOut();
-        router.push('/login');
-    }
-
-    if (pathname === '/login' || pathname === '/register' || pathname.startsWith('/admin/qr')) return null;
-
-    const isActive = (path: string) => pathname === path;
-
-    const [hasNewPosts, setHasNewPosts] = useState(false);
-
     useEffect(() => {
         // Poll for new posts status
         async function checkStatus() {
@@ -73,6 +62,17 @@ export default function Sidebar() {
         const interval = setInterval(checkStatus, 30000); // Check every 30s
         return () => clearInterval(interval);
     }, []);
+
+    async function handleLogout() {
+        localStorage.removeItem('user_role');
+        await supabase.auth.signOut();
+        router.push('/login');
+    }
+
+    if (!pathname) return null;
+    if (pathname === '/login' || pathname === '/register' || pathname?.startsWith('/admin/qr')) return null;
+
+    const isActive = (path: string) => pathname === path;
 
     return (
         <>
