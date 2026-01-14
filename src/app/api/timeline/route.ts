@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     try {
         const user = await getUser(req);
 
-        const includeQuery: any = {
+        const includeQuery = {
             user: {
                 select: {
                     id: true,
@@ -26,15 +26,14 @@ export async function GET(req: Request) {
             },
             _count: {
                 select: { likes: true }
-            }
+            },
+            ...(user ? {
+                likes: {
+                    where: { userId: user.id },
+                    select: { userId: true }
+                }
+            } : {})
         };
-
-        if (user) {
-            includeQuery.likes = {
-                where: { userId: user.id },
-                select: { userId: true }
-            };
-        }
 
         const posts = await prisma.post.findMany({
             include: includeQuery,
@@ -43,10 +42,10 @@ export async function GET(req: Request) {
             }
         });
 
-        const formattedPosts = posts.map((post: any) => ({
+        const formattedPosts = posts.map(post => ({
             ...post,
-            likeCount: post._count?.likes ?? 0,
-            isLiked: post.likes?.length > 0
+            likeCount: post._count.likes,
+            isLiked: (post as any).likes?.length > 0 // still safe to access relation
         }));
 
         return NextResponse.json(formattedPosts);

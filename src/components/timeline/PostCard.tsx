@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { formatDistanceToNow } from 'date-fns';
-import { User, MessageCircle, Heart } from 'lucide-react';
+import { User, MessageCircle, Heart, Trash2, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface PostCardProps {
@@ -18,14 +18,18 @@ interface PostCardProps {
             avatarUrl: string | null;
         };
     };
+    currentUserId?: string | null;
+    onDelete?: () => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post }) => {
+export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelete }) => {
     const [isLiked, setIsLiked] = React.useState(post.isLiked);
     const [likeCount, setLikeCount] = React.useState(post.likeCount);
     const [isAnimating, setIsAnimating] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState(false);
 
     const handleLike = async () => {
+        // ... existing handleLike logic ...
         // Optimistic update
         const newIsLiked = !isLiked;
         setIsLiked(newIsLiked);
@@ -44,12 +48,44 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 }
             });
 
-            if (!res.ok) throw new Error('Failed to like');
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("Like API Error:", res.status, text);
+                throw new Error(`Failed to like: ${res.status} ${text}`);
+            }
         } catch (error) {
             console.error("Like failed:", error);
             // Revert on error
             setIsLiked(!newIsLiked);
             setLikeCount(prev => !newIsLiked ? prev + 1 : prev - 1);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm("Yakin mau di hapus?")) return;
+
+        setIsDeleting(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const res = await fetch(`/api/timeline/${post.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            });
+
+            if (res.ok) {
+                if (onDelete) onDelete();
+            } else {
+                alert("Failed to delete post");
+            }
+        } catch (error) {
+            console.error("Delete failed", error);
+            alert("Error deleting post");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -78,9 +114,21 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                             <h3 className="font-bold text-brown-900 truncate">{post.user.fullName}</h3>
                             <span className="text-xs md:text-sm text-brown-500 truncate">@{post.user.username}</span>
                         </div>
-                        <span className="text-[10px] md:text-xs text-brown-400 flex-shrink-0">
-                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] md:text-xs text-brown-400 flex-shrink-0">
+                                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                            </span>
+                            {currentUserId === post.user.id && (
+                                <button
+                                    onClick={handleDelete}
+                                    disabled={isDeleting}
+                                    className="text-brown-400 hover:text-red-500 transition-colors p-1"
+                                    title="Delete post"
+                                >
+                                    {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <p className="text-sm md:text-base text-brown-800 leading-relaxed whitespace-pre-wrap break-words">

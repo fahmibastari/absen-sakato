@@ -4,10 +4,27 @@ import { createClient } from '@supabase/supabase-js';
 
 // Helper to get user
 async function getUser(req: Request) {
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return null;
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+        console.log("getUser: No Authorization header");
+        return null;
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+        console.log("getUser: No token in Authorization header");
+        return null;
+    }
+
+    console.log(`getUser: Verifying token: ${token.substring(0, 10)}...`);
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-    const { data: { user } } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+        console.error("getUser: Supabase auth failed:", error?.message);
+        return null;
+    }
+
     return user;
 }
 
@@ -28,7 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         console.log(`User ${user.id} toggling like for post ${postId}`);
 
         // Check if like exists
-        const existingLike = await (prisma as any).like.findUnique({
+        const existingLike = await prisma.like.findUnique({
             where: {
                 userId_postId: {
                     userId: user.id,
@@ -39,7 +56,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         if (existingLike) {
             // Unlike
-            await (prisma as any).like.delete({
+            await prisma.like.delete({
                 where: {
                     userId_postId: {
                         userId: user.id,
@@ -50,7 +67,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ liked: false });
         } else {
             // Like
-            await (prisma as any).like.create({
+            await prisma.like.create({
                 data: {
                     userId: user.id,
                     postId: postId

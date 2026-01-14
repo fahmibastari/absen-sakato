@@ -55,7 +55,7 @@ export default function CreatePostForm({ onPostCreated }: { onPostCreated: () =>
                     <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        placeholder="What's brewing today?"
+                        placeholder="Hayo mau ngomong apa?"
                         className="w-full bg-white/50 border border-brown-200 rounded-xl p-3 md:p-4 pr-12 text-brown-900 placeholder:text-brown-400 focus:outline-none focus:ring-2 focus:ring-mustard-500 min-h-[80px] md:min-h-[100px] resize-none transition-all text-sm md:text-base"
                         maxLength={280}
                     />

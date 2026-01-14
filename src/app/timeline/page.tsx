@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { PostCard } from '@/components/timeline/PostCard';
 import CreatePostForm from '@/components/timeline/CreatePostForm';
+import { supabase } from '@/lib/supabase';
 import { Loader2, MessageCircle } from 'lucide-react';
 
 interface Post {
@@ -23,10 +24,18 @@ interface Post {
 export default function TimelinePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     async function fetchPosts() {
         try {
-            const res = await fetch('/api/timeline');
+            const { data: { session } } = await supabase.auth.getSession();
+            const headers: HeadersInit = {};
+            if (session) {
+                headers['Authorization'] = `Bearer ${session.access_token}`;
+                setCurrentUserId(session.user.id);
+            }
+
+            const res = await fetch('/api/timeline', { headers });
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data);
@@ -42,6 +51,10 @@ export default function TimelinePage() {
         fetchPosts();
     }, []);
 
+    const handleDelete = (postId: string) => {
+        setPosts(posts.filter(p => p.id !== postId));
+    };
+
     return (
         <div className="max-w-2xl mx-auto p-4 md:p-8">
             {/* Header */}
@@ -52,7 +65,7 @@ export default function TimelinePage() {
                     </div>
                     Timeline
                 </h1>
-                <p className="text-brown-500 mt-2">See what's brewing in the community.</p>
+                <p className="text-brown-500 mt-2">Sosmed aseli Sakato loh ya.</p>
             </div>
 
             {/* Create Post */}
@@ -66,7 +79,12 @@ export default function TimelinePage() {
                     </div>
                 ) : posts.length > 0 ? (
                     posts.map(post => (
-                        <PostCard key={post.id} post={post} />
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            currentUserId={currentUserId}
+                            onDelete={() => handleDelete(post.id)}
+                        />
                     ))
                 ) : (
                     <Card className="text-center py-12 border-dashed border-2 border-brown-200 bg-transparent shadow-none">
