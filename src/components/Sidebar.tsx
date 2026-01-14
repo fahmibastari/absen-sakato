@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Trophy, History, User, LogOut, Shield, Coffee } from 'lucide-react';
+import { Home, Trophy, History, User, LogOut, Shield, Coffee, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -62,6 +62,10 @@ export default function Sidebar() {
                         <Trophy size={20} />
                         <span className="text-[10px] font-medium">Ranking</span>
                     </Link>
+                    <Link href="/timeline" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/timeline') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
+                        <MessageCircle size={20} />
+                        <span className="text-[10px] font-medium">Timeline</span>
+                    </Link>
                     <Link href="/history" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/history') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
                         <History size={20} />
                         <span className="text-[10px] font-medium">History</span>
@@ -105,6 +109,11 @@ export default function Sidebar() {
                         <Trophy size={20} />
                         <span>Leaderboard</span>
                         {isActive('/leaderboard') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
+                    </Link>
+                    <Link href="/timeline" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/timeline') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
+                        <MessageCircle size={20} />
+                        <span>Timeline</span>
+                        {isActive('/timeline') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
                     </Link>
                     <Link href="/history" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/history') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
                         <History size={20} />
