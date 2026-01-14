@@ -16,6 +16,15 @@ export async function GET(req: Request) {
     try {
         const user = await getUser(req);
 
+        // Update lastViewedTimeline if user is authenticated
+        if (user) {
+            // Fire and forget update
+            (prisma as any).user.update({
+                where: { id: user.id },
+                data: { lastViewedTimeline: new Date() }
+            }).catch((err: any) => console.error("Failed to update lastViewedTimeline", err));
+        }
+
         const includeQuery = {
             user: {
                 select: {
@@ -135,11 +144,43 @@ export async function POST(req: Request) {
                 }
             }
 
-            // 2. "New Post" Global Notification (Optional/Spammy? - Keeping strict to user request "misal juga ada yang baru ngetweet")
-            // Implementing this for EVERY user is dangerous. 
-            // Better approach: Let's assume for now we ONLY notify on Mentions as that is standard safe behavior.
-            // If the user insisted on "everyone receives notification", we would do a batch create here.
-            // I'll skip broadcasting to ALL users for now to prevent DB explosion, unless explicitly calibrated later.
+            // 2. "New Post" Global Notification
+            // Broadcast to all users who have push subscriptions (except self)
+            // Optimization: In a real large app, this should be a background queue. 
+            // Here we do a simple "send to all endpoints" via our helper or custom logic.
+
+            // Fetch ALL subscriptions except sender
+            // Note: This might be heavy if users > 1000. For now it's fine.
+            const allSubscriptions = await (prisma as any).pushSubscription.findMany({
+                where: {
+                    userId: { not: user.id }
+                },
+                select: { userId: true } // Just need distinct userIds to target
+            });
+
+            // Get unique user IDs to avoid duplicate sends if user has multiple devices (handled by sendPushNotification implementation slightly efficiently)
+            const uniqueUserIds = Array.from(new Set(allSubscriptions.map((s: any) => s.userId)));
+
+            // Fire and forget push
+            const senderName = user.user_metadata?.username || "Someone"; // Fallback if Supabase user doesn't carry username easily (or fetch from DB)
+            // Actually better to fetch from DB for accurate username
+            const senderProfileForGlobal = await prisma.user.findUnique({ where: { id: user.id }, select: { username: true } });
+            const displayName = senderProfileForGlobal?.username || "Someone";
+
+            // Limit broadcast to avoid timeout?
+            // Let's send to first 50 for safety in this valid iteration, or just loop all. 
+            // Taking 20 most recent separate users to be safe? No, user wants *broadcast*.
+
+            // We'll iterate but with error catching per chunk if we were advanced. 
+            // Simple loop for now.
+            uniqueUserIds.forEach((recipientId: any) => {
+                sendPushNotification(
+                    recipientId,
+                    "New Post",
+                    `@${displayName} posted on timeline`,
+                    `/timeline`
+                );
+            });
 
         } catch (notifError) {
             console.error("Failed to create notifications:", notifError);

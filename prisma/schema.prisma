@@ -29,6 +29,7 @@ model User {
   notificationsReceived Notification[] @relation("ReceivedNotifications")
   notificationsSent     Notification[] @relation("SentNotifications")
   pushSubscriptions     PushSubscription[]
+  lastViewedTimeline DateTime @default(now())
 }
 
 model Post {
