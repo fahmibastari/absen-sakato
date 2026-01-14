@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendPushNotification } from '@/lib/push';
 
 // Helper to get user
 async function getUser(req: Request) {
@@ -67,12 +68,53 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ liked: false });
         } else {
             // Like
+            // Like
             await prisma.like.create({
                 data: {
                     userId: user.id,
                     postId: postId
                 }
             });
+
+            // NOTIFICATION LOGIC
+            try {
+                const post = await prisma.post.findUnique({
+                    where: { id: postId },
+                    select: { userId: true }
+                });
+
+                // ... (inside POST)
+
+                if (post && post.userId !== user.id) {
+                    await (prisma as any).notification.create({ // Cast to any to avoid stale type error
+                        data: {
+                            userId: post.userId,
+                            senderId: user.id,
+                            type: 'LIKE',
+                            postId: postId,
+                            read: false
+                        }
+                    });
+
+                    // Send Push Notification
+                    const senderProfile = await prisma.user.findUnique({
+                        where: { id: user.id },
+                        select: { username: true }
+                    });
+
+                    if (senderProfile) {
+                        sendPushNotification(
+                            post.userId,
+                            "New Like",
+                            `@${senderProfile.username} liked your post`,
+                            `/timeline`
+                        );
+                    }
+                }
+            } catch (notifError) {
+                console.error("Failed to create like notification:", notifError);
+            }
+
             return NextResponse.json({ liked: true });
         }
     } catch (error) {

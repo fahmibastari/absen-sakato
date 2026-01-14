@@ -6,6 +6,7 @@ import { PostCard } from '@/components/timeline/PostCard';
 import CreatePostForm from '@/components/timeline/CreatePostForm';
 import { supabase } from '@/lib/supabase';
 import { Loader2, MessageCircle } from 'lucide-react';
+import { NotificationPermission } from '@/components/timeline/NotificationPermission';
 
 interface Post {
     id: string;
@@ -67,6 +68,9 @@ export default function TimelinePage() {
                 </h1>
                 <p className="text-brown-500 mt-2">Sosmed aseli Sakato loh ya.</p>
             </div>
+
+            {/* Notification Permission Request */}
+            <NotificationPermission />
 
             {/* Create Post */}
             <CreatePostForm onPostCreated={fetchPosts} />
