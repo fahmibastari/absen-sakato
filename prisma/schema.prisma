@@ -12,6 +12,13 @@ enum Role {
   ADMIN
 }
 
+enum NotificationType {
+  LIKE
+  MENTION
+  POST
+  COMMENT
+}
+
 model User {
   id        String   @id // Matches Supabase Auth ID
   fullName  String
@@ -29,7 +36,8 @@ model User {
   notificationsReceived Notification[] @relation("ReceivedNotifications")
   notificationsSent     Notification[] @relation("SentNotifications")
   pushSubscriptions     PushSubscription[]
-  lastViewedTimeline DateTime @default(now())
+  lastViewedTimeline    DateTime @default(now())
+  comments              Comment[]
 }
 
 model Post {
@@ -41,6 +49,7 @@ model Post {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes     Like[]
   notifications Notification[]
+  comments  Comment[]
 
   @@index([userId])
 }
@@ -59,11 +68,24 @@ model Like {
   @@index([postId])
 }
 
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([postId])
+}
+
 model Notification {
   id        String   @id @default(uuid())
   userId    String   // Recipient
   senderId  String   // Who triggered it
-  type      String   // LIKE, MENTION, POST
+  type      String   // LIKE, MENTION, POST, COMMENT
   postId    String?  // Related post
   read      Boolean  @default(false)
   createdAt DateTime @default(now())

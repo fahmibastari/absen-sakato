@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "Sakato Coffee",
   description: "Coffee Shop Attendance",
   manifest: "/manifest.json",
-  themeColor: "#D4A373",
 };
 
 export const viewport = {
@@ -25,6 +24,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#D4A373",
 };
 
 export default function RootLayout({
