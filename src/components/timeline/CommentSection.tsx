@@ -31,7 +31,21 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    const inputRef = useState<HTMLInputElement | null>(null);
+    // Mention State
+    interface SearchUser {
+        id: string;
+        fullName: string;
+        username: string;
+        avatarUrl: string | null;
+    }
+
+    const [showMentions, setShowMentions] = useState(false);
+    const [mentionQuery, setMentionQuery] = useState('');
+    const [mentionResults, setMentionResults] = useState<SearchUser[]>([]);
+    const [cursorPosition, setCursorPosition] = useState(0);
+
+
+    // RESTORED: Input Ref for focus and reply handling
     const [inputEl, setInputEl] = useState<HTMLInputElement | null>(null);
 
     const handleReply = (username: string) => {
@@ -40,22 +54,72 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
     };
 
     useEffect(() => {
-        fetchComments();
-    }, [postId]);
-
-    async function fetchComments() {
-        try {
-            const res = await fetch(`/api/timeline/${postId}/comments`);
-            if (res.ok) {
-                const data = await res.json();
-                setComments(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch comments", error);
-        } finally {
-            setLoading(false);
+        if (showMentions && mentionQuery) {
+            const timeoutId = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/users/search?q=${mentionQuery}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setMentionResults(data);
+                    }
+                } catch (error) {
+                    console.error("Search failed", error);
+                }
+            }, 300);
+            return () => clearTimeout(timeoutId);
+        } else {
+            setMentionResults([]);
         }
-    }
+    }, [showMentions, mentionQuery]);
+
+    const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const text = e.target.value;
+        const newCursorPos = e.target.selectionStart || 0;
+        setNewComment(text);
+        setCursorPosition(newCursorPos);
+
+        const textBeforeCursor = text.slice(0, newCursorPos);
+        const lastAtPos = textBeforeCursor.lastIndexOf('@');
+
+        if (lastAtPos !== -1) {
+            const textAfterAt = textBeforeCursor.slice(lastAtPos + 1);
+            if (!textAfterAt.includes(' ')) {
+                setShowMentions(true);
+                setMentionQuery(textAfterAt);
+                return;
+            }
+        }
+        setShowMentions(false);
+    };
+
+    const selectMention = (user: SearchUser) => {
+        const textBeforeCursor = newComment.slice(0, cursorPosition);
+        const lastAtPos = textBeforeCursor.lastIndexOf('@');
+        const textAfterCursor = newComment.slice(cursorPosition);
+
+        const updatedComment = newComment.slice(0, lastAtPos) + `@${user.username} ` + textAfterCursor;
+
+        setNewComment(updatedComment);
+        setShowMentions(false);
+        setMentionResults([]);
+        inputEl?.focus();
+    };
+
+    // Render content with mentions
+    const renderContent = (text: string) => {
+        const parts = text.split(/(@\w+)/g);
+        return parts.map((part, index) => {
+            if (part.match(/^@\w+$/)) {
+                const username = part.substring(1);
+                return (
+                    <Link key={index} href={`/profile/${username}`} className="text-blue-500 hover:underline font-medium">
+                        {part}
+                    </Link>
+                );
+            }
+            return part;
+        });
+    };
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -79,6 +143,7 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                 const addedComment = await res.json();
                 setComments([...comments, addedComment]);
                 setNewComment('');
+                setShowMentions(false); // Reset mentions
                 if (onCommentAdded) onCommentAdded();
             }
         } catch (error) {
@@ -124,7 +189,7 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                                     <Link href={`/profile/${comment.user.username}`} className="font-semibold text-gray-900 mr-2 hover:underline">
                                         {comment.user.username}
                                     </Link>
-                                    <span className="text-gray-800 break-words">{comment.content}</span>
+                                    <span className="text-gray-800 break-words">{renderContent(comment.content)}</span>
                                 </div>
                                 <div className="flex gap-4 mt-1">
                                     <span className="text-[11px] text-gray-400">
@@ -144,17 +209,46 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSubmit} className="flex gap-3 items-center border-t border-gray-100 pt-3">
+            <form onSubmit={handleSubmit} className="flex gap-3 items-center border-t border-gray-100 pt-3 relative">
+                {/* Mention Suggestions Popover */}
+                {showMentions && mentionResults.length > 0 && (
+                    <div className="absolute bottom-full left-10 mb-2 w-64 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-50">
+                        {mentionResults.map(user => (
+                            <button
+                                key={user.id}
+                                type="button"
+                                onClick={() => selectMention(user)}
+                                className="w-full text-left p-2 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-50 last:border-0"
+                            >
+                                <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden relative">
+                                    {user.avatarUrl ? (
+                                        <Image src={user.avatarUrl} alt={user.username} fill className="object-cover" />
+                                    ) : (
+                                        <span className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">
+                                            {user.fullName.charAt(0)}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-bold text-gray-800 truncate">{user.fullName}</p>
+                                    <p className="text-[10px] text-gray-500 truncate">@{user.username}</p>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 <div className="text-xl">😊</div>
                 <div className="flex-1 relative">
                     <input
                         ref={setInputEl}
                         type="text"
                         value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
+                        onChange={handleContentChange}
                         placeholder="Tambahkan komentar..."
                         className="w-full text-sm outline-none placeholder:text-gray-400 bg-transparent py-1"
                         disabled={submitting}
+                        autoComplete="off"
                     />
                 </div>
                 <button

@@ -31,7 +31,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
     const [commentCount, setCommentCount] = React.useState(post.commentCount || 0);
     const [isAnimating, setIsAnimating] = React.useState(false);
     const [isDeleting, setIsDeleting] = React.useState(false);
+
+    // Comment Toggle & Cache State
     const [showComments, setShowComments] = React.useState(false);
+    const [hasFetchedComments, setHasFetchedComments] = React.useState(false);
 
     // Profile Modal State
     const [previewUsername, setPreviewUsername] = useState<string | null>(null);
@@ -40,6 +43,13 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
     const openProfile = (username: string) => {
         setPreviewUsername(username);
         setIsModalOpen(true);
+    };
+
+    const toggleComments = () => {
+        if (!showComments && !hasFetchedComments) {
+            setHasFetchedComments(true);
+        }
+        setShowComments(!showComments);
     };
 
     const handleLike = async () => {
@@ -192,7 +202,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
 
                             {/* Comment Button */}
                             <button
-                                onClick={() => setShowComments(!showComments)}
+                                onClick={toggleComments}
                                 className={`flex items-center gap-1.5 text-xs md:text-sm transition-all duration-200 hover:text-mustard-600 ${showComments ? 'text-mustard-600' : ''}`}
                             >
                                 <MessageCircle size={18} className={showComments ? 'fill-current' : ''} />
@@ -204,13 +214,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
                     </div>
                 </div>
 
-                {/* Comment Section (Collapsible) */}
-                {showComments && (
-                    <CommentSection
-                        postId={post.id}
-                        currentUserId={currentUserId ?? null}
-                        onCommentAdded={() => setCommentCount(prev => prev + 1)}
-                    />
+                {/* Comment Section (Collapsible - Kept alive for performance) */}
+                {hasFetchedComments && (
+                    <div className={showComments ? 'block' : 'hidden'}>
+                        <CommentSection
+                            postId={post.id}
+                            currentUserId={currentUserId ?? null}
+                            onCommentAdded={() => setCommentCount(prev => prev + 1)}
+                        />
+                    </div>
                 )}
             </Card>
 
