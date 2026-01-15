@@ -13,6 +13,7 @@ interface Post {
     content: string;
     createdAt: string;
     likeCount: number;
+    commentCount: number;
     isLiked: boolean;
     user: {
         id: string;

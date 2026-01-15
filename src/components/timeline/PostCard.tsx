@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { User, MessageCircle, Heart, Trash2, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { UserPreviewModal } from '@/components/timeline/UserPreviewModal';
+import CommentSection from '@/components/timeline/CommentSection';
 
 interface PostCardProps {
     post: {
@@ -11,6 +12,7 @@ interface PostCardProps {
         content: string;
         createdAt: string;
         likeCount: number;
+        commentCount: number;
         isLiked: boolean;
         user: {
             id: string;
@@ -26,8 +28,10 @@ interface PostCardProps {
 export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelete }) => {
     const [isLiked, setIsLiked] = React.useState(post.isLiked);
     const [likeCount, setLikeCount] = React.useState(post.likeCount);
+    const [commentCount, setCommentCount] = React.useState(post.commentCount || 0);
     const [isAnimating, setIsAnimating] = React.useState(false);
     const [isDeleting, setIsDeleting] = React.useState(false);
+    const [showComments, setShowComments] = React.useState(false);
 
     // Profile Modal State
     const [previewUsername, setPreviewUsername] = useState<string | null>(null);
@@ -120,8 +124,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
 
     return (
         <>
-            <Card className="mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex gap-3 md:gap-4">
+            <Card className="mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden">
+                <div className="flex gap-3 md:gap-4 p-4 md:p-6 pb-2">
                     {/* Avatar */}
                     <div className="flex-shrink-0 cursor-pointer" onClick={() => openProfile(post.user.username)}>
                         {post.user.avatarUrl ? (
@@ -171,22 +175,43 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
                         </p>
 
                         {/* Actions */}
-                        <div className="mt-3 flex gap-4 text-brown-400">
+                        <div className="mt-3 flex gap-6 text-brown-400">
+                            {/* Like Button */}
                             <button
                                 onClick={handleLike}
                                 className={`flex items-center gap-1.5 text-xs md:text-sm transition-all duration-200 group ${isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
                             >
                                 <div className={`relative ${isAnimating ? 'scale-125' : 'scale-100'} transition-transform`}>
                                     <Heart
-                                        size={16}
+                                        size={18}
                                         className={`${isLiked ? 'fill-current' : ''}`}
                                     />
                                 </div>
                                 <span className="font-medium">{likeCount > 0 ? likeCount : 'Like'}</span>
                             </button>
+
+                            {/* Comment Button */}
+                            <button
+                                onClick={() => setShowComments(!showComments)}
+                                className={`flex items-center gap-1.5 text-xs md:text-sm transition-all duration-200 hover:text-mustard-600 ${showComments ? 'text-mustard-600' : ''}`}
+                            >
+                                <MessageCircle size={18} className={showComments ? 'fill-current' : ''} />
+                                <span className="font-medium">
+                                    {commentCount > 0 ? `${commentCount} Comments` : 'Comment'}
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </div>
+
+                {/* Comment Section (Collapsible) */}
+                {showComments && (
+                    <CommentSection
+                        postId={post.id}
+                        currentUserId={currentUserId ?? null}
+                        onCommentAdded={() => setCommentCount(prev => prev + 1)}
+                    />
+                )}
             </Card>
 
             <UserPreviewModal
