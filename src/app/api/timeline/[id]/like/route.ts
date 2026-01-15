@@ -68,6 +68,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ liked: false });
         } else {
             // Like
+            // Ensure User exists in DB (sync from Supabase)
+            const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+            if (!dbUser) {
+                const metadata = user.user_metadata || {};
+                await prisma.user.create({
+                    data: {
+                        id: user.id,
+                        fullName: metadata.full_name || metadata.name || "Unknown",
+                        username: metadata.username || user.email?.split('@')[0] || "user",
+                        avatarUrl: metadata.avatar_url || metadata.picture,
+                    }
+                });
+            }
+
             // Like
             await prisma.like.create({
                 data: {

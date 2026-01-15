@@ -35,7 +35,10 @@ export async function GET(req: Request) {
                 }
             },
             _count: {
-                select: { likes: true }
+                select: {
+                    likes: true,
+                    comments: true
+                }
             },
             ...(user ? {
                 likes: {
@@ -55,6 +58,7 @@ export async function GET(req: Request) {
         const formattedPosts = posts.map(post => ({
             ...post,
             likeCount: post._count.likes,
+            commentCount: (post._count as any).comments,
             isLiked: (post as any).likes?.length > 0 // still safe to access relation
         }));
 
