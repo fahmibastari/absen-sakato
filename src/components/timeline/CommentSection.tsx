@@ -47,11 +47,48 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
 
     // RESTORED: Input Ref for focus and reply handling
     const [inputEl, setInputEl] = useState<HTMLInputElement | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleReply = (username: string) => {
         setNewComment(`@${username} `);
         inputEl?.focus();
     };
+
+    useEffect(() => {
+        if (!postId) return;
+        fetchComments();
+    }, [postId]);
+
+    async function fetchComments() {
+        setLoading(true);
+        setError(null);
+        try {
+            // Set a timeout for the fetch to avoid infinite hanging perception
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+            const res = await fetch(`/api/timeline/${postId}/comments`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const data = await res.json();
+                setComments(data);
+            } else {
+                const text = await res.text();
+                console.error("Fetch error:", res.status, text);
+                setError(`Gagal memuat komentar (${res.status}). Coba lagi nanti.`);
+            }
+        } catch (error: any) {
+            console.error("Failed to fetch comments", error);
+            if (error.name === 'AbortError') {
+                setError("Koneksi lambat/timeout. Coba refresh.");
+            } else {
+                setError("Terjadi kesalahan jaringan.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
         if (showMentions && mentionQuery) {
