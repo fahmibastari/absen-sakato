@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import { UserPreviewModal } from "@/components/timeline/UserPreviewModal";
 
 interface LiveUser {
@@ -36,8 +37,14 @@ export function LiveSessionList({ users }: { users: LiveUser[] }) {
                             className="flex flex-col items-center gap-2 animate-fadeIn p-4 bg-brown-50 rounded-xl hover:shadow-md transition-all cursor-pointer hover:bg-brown-100 active:scale-95"
                         >
                             <div className="w-16 h-16 rounded-full border-2 border-green-500 p-1 relative">
-                                <img src={u.avatarUrl || '/icons/icon-192x192.png'} className="w-full h-full rounded-full object-cover bg-brown-200" />
-                                <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border border-white animate-pulse"></div>
+                                <Image
+                                    src={u.avatarUrl || '/icons/icon-192x192.png'}
+                                    alt={u.fullName}
+                                    fill
+                                    className="rounded-full object-cover"
+                                    sizes="64px"
+                                />
+                                <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border border-white animate-pulse z-10"></div>
                             </div>
                             <div className="text-center w-full">
                                 <p className="text-sm font-bold text-brown-900 truncate w-full">{u.fullName}</p>

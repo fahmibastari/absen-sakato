@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Award, Clock, Trophy, Medal, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -92,9 +93,15 @@ export default function LeaderboardPage() {
                             {top3[1] && (
                                 <div className="order-2 md:order-1 flex-1 w-full md:max-w-xs">
                                     <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 text-center shadow-lg transform hover:scale-105 transition-transform">
-                                        <div className="w-20 h-20 mx-auto mb-3 rounded-full border-4 border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
+                                        <div className="w-20 h-20 mx-auto mb-3 rounded-full border-4 border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden relative">
                                             {top3[1].avatarUrl ? (
-                                                <img src={top3[1].avatarUrl} alt={top3[1].fullName} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={top3[1].avatarUrl}
+                                                    alt={top3[1].fullName}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="80px"
+                                                />
                                             ) : (
                                                 <span className="font-bold text-2xl text-gray-600">{top3[1].fullName[0]}</span>
                                             )}
@@ -117,9 +124,15 @@ export default function LeaderboardPage() {
                                         <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-mustard-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-md">
                                             CHAMPION
                                         </div>
-                                        <div className="w-24 h-24 mx-auto mb-4 rounded-full border-4 border-white bg-white flex items-center justify-center overflow-hidden shadow-lg">
+                                        <div className="w-24 h-24 mx-auto mb-4 rounded-full border-4 border-white bg-white flex items-center justify-center overflow-hidden shadow-lg relative">
                                             {top3[0].avatarUrl ? (
-                                                <img src={top3[0].avatarUrl} alt={top3[0].fullName} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={top3[0].avatarUrl}
+                                                    alt={top3[0].fullName}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="96px"
+                                                />
                                             ) : (
                                                 <span className="font-bold text-3xl text-mustard-600">{top3[0].fullName[0]}</span>
                                             )}
@@ -139,9 +152,15 @@ export default function LeaderboardPage() {
                             {top3[2] && (
                                 <div className="order-3 md:order-3 flex-1 w-full md:max-w-xs">
                                     <div className="bg-white rounded-2xl border-2 border-orange-300 p-6 text-center shadow-lg transform hover:scale-105 transition-transform">
-                                        <div className="w-20 h-20 mx-auto mb-3 rounded-full border-4 border-orange-300 bg-orange-100 flex items-center justify-center overflow-hidden">
+                                        <div className="w-20 h-20 mx-auto mb-3 rounded-full border-4 border-orange-300 bg-orange-100 flex items-center justify-center overflow-hidden relative">
                                             {top3[2].avatarUrl ? (
-                                                <img src={top3[2].avatarUrl} alt={top3[2].fullName} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={top3[2].avatarUrl}
+                                                    alt={top3[2].fullName}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="80px"
+                                                />
                                             ) : (
                                                 <span className="font-bold text-2xl text-orange-600">{top3[2].fullName[0]}</span>
                                             )}
@@ -176,9 +195,15 @@ export default function LeaderboardPage() {
                                         </div>
 
                                         {/* Avatar */}
-                                        <div className="w-10 h-10 flex-shrink-0 rounded-full border-2 border-brown-200 bg-brown-100 flex items-center justify-center overflow-hidden">
+                                        <div className="w-10 h-10 flex-shrink-0 rounded-full border-2 border-brown-200 bg-brown-100 flex items-center justify-center overflow-hidden relative">
                                             {leader.avatarUrl ? (
-                                                <img src={leader.avatarUrl} alt={leader.fullName} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={leader.avatarUrl}
+                                                    alt={leader.fullName}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="40px"
+                                                />
                                             ) : (
                                                 <span className="font-bold text-sm text-brown-700">{leader.fullName[0]}</span>
                                             )}
@@ -214,9 +239,15 @@ export default function LeaderboardPage() {
                         {admins.map((admin) => (
                             <div key={admin.userId} className="flex items-center justify-between p-4 bg-brown-800 rounded-xl border border-brown-700">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full border-2 border-mustard-500 bg-brown-700 flex items-center justify-center overflow-hidden">
+                                    <div className="w-12 h-12 rounded-full border-2 border-mustard-500 bg-brown-700 flex items-center justify-center overflow-hidden relative">
                                         {admin.avatarUrl ? (
-                                            <img src={admin.avatarUrl} alt="Admin" className="w-full h-full object-cover" />
+                                            <Image
+                                                src={admin.avatarUrl}
+                                                alt="Admin"
+                                                fill
+                                                className="object-cover"
+                                                sizes="48px"
+                                            />
                                         ) : (
                                             <span className="font-bold text-mustard-500">A</span>
                                         )}

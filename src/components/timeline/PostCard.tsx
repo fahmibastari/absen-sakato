@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { formatDistanceToNow } from 'date-fns';
 import { User, MessageCircle, Heart, Trash2, Loader2 } from 'lucide-react';
@@ -138,15 +139,17 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
             <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden p-0">
                 <div className="flex gap-3 md:gap-4 p-4 md:p-6 pb-2">
                     {/* Avatar */}
-                    <div className="flex-shrink-0 cursor-pointer" onClick={() => openProfile(post.user.username)}>
+                    <div className="flex-shrink-0 cursor-pointer relative w-10 h-10 md:w-12 md:h-12" onClick={() => openProfile(post.user.username)}>
                         {post.user.avatarUrl ? (
-                            <img
+                            <Image
                                 src={post.user.avatarUrl}
                                 alt={post.user.fullName}
-                                className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                                fill
+                                className="rounded-full object-cover border-2 border-white shadow-sm"
+                                sizes="(max-width: 768px) 40px, 48px"
                             />
                         ) : (
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-mustard-100 flex items-center justify-center border-2 border-white shadow-sm">
+                            <div className="w-full h-full rounded-full bg-mustard-100 flex items-center justify-center border-2 border-white shadow-sm">
                                 <User className="text-mustard-600" size={18} />
                             </div>
                         )}

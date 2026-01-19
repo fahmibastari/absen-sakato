@@ -33,32 +33,39 @@ export default function DashboardPage() {
                 return;
             }
 
-            try {
-                const res = await fetch('/api/attendance/me', {
-                    headers: { Authorization: `Bearer ${session.access_token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setUserState(data);
-                    setUserName(data.fullName || "User");
-                }
-            } catch (e) {
-                console.error(e);
-            }
+            // Parallel Data Fetching (Waterfall Fix)
+            const fetchMe = fetch('/api/attendance/me', {
+                headers: { Authorization: `Bearer ${session.access_token}` }
+            }).then(res => res.ok ? res.json() : null);
 
-            loadLive();
+            const fetchLive = fetch('/api/attendance/live').then(res => res.json());
+            const fetchHistory = fetch('/api/attendance/today').then(res => res.json());
+
+            try {
+                const [meData, liveData, historyData] = await Promise.all([fetchMe, fetchLive, fetchHistory]);
+
+                if (meData) {
+                    setUserState(meData);
+                    setUserName(meData.fullName || "User");
+                }
+                setLiveUsers(liveData);
+                setTodayHistory(historyData);
+            } catch (e) {
+                console.error("Dashboard Load Error:", e);
+            }
         }
         init();
     }, []);
 
     async function loadLive() {
-        const res = await fetch('/api/attendance/live');
-        const data = await res.json();
-        setLiveUsers(data);
+        // Parallel refresh
+        const [liveData, historyData] = await Promise.all([
+            fetch('/api/attendance/live').then(r => r.json()),
+            fetch('/api/attendance/today').then(r => r.json())
+        ]);
 
-        const hRes = await fetch('/api/attendance/today');
-        const hData = await hRes.json();
-        setTodayHistory(hData);
+        setLiveUsers(liveData);
+        setTodayHistory(historyData);
     }
 
     const isProcessingRef = useRef(false);
