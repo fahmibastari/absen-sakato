@@ -16,16 +16,21 @@ async function getUser(req: Request) {
     return user;
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+    req: Request,
+    context: { params: Promise<{ id: string }> }
+) {
     try {
+        const params = await context.params;
+        const postId = params.id;
+
+        if (!postId) {
+            return NextResponse.json({ error: "Post ID required" }, { status: 400 });
+        }
+
         const user = await getUser(req);
         if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const { id: postId } = await params;
-        if (!postId) {
-            return NextResponse.json({ error: "Post ID required" }, { status: 400 });
         }
 
         // Verify ownership
@@ -39,7 +44,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         }
 
         if (post.userId !== user.id) {
-            return NextResponse.json({ error: "Forbidden: You can only delete your own posts" }, { status: 403 });
+            return NextResponse.json({ error: "Forbidden: Not your post" }, { status: 403 });
         }
 
         // Delete post
@@ -49,7 +54,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Error deleting post:", error);
-        return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
+        console.error("DELETE Error:", error);
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to delete post" }, { status: 500 });
     }
 }

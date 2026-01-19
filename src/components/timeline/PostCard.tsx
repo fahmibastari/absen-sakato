@@ -102,7 +102,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
             if (res.ok) {
                 if (onDelete) onDelete();
             } else {
-                alert("Failed to delete post");
+                const data = await res.json();
+                alert(data.error || "Failed to delete post");
             }
         } catch (error) {
             console.error("Delete failed", error);

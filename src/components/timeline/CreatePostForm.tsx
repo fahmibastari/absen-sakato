@@ -118,7 +118,8 @@ export default function CreatePostForm({ onPostCreated, defaultType = 'POST' }: 
                 onPostCreated(); // Trigger refresh
             } else {
                 console.error("Failed to post");
-                alert("Failed to post update. Please try again.");
+                const data = await res.json();
+                alert(data.error || "Failed to post update. Please try again.");
             }
         } catch (error) {
             console.error("Error posting:", error);

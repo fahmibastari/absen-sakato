@@ -210,6 +210,9 @@ export async function POST(req: Request) {
         return NextResponse.json(newPost);
     } catch (error) {
         console.error("Error creating post:", error);
-        return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : "Failed to create post" },
+            { status: 500 }
+        );
     }
 }
