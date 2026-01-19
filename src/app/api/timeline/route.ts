@@ -4,11 +4,37 @@ import { createClient } from '@supabase/supabase-js';
 import { sendPushNotification } from '@/lib/push';
 
 // Reuse the getUser helper
+// Reuse the getUser helper
 async function getUser(req: Request) {
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return null;
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-    const { data: { user } } = await supabase.auth.getUser(token);
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+        console.error("[Auth] No Authorization header");
+        return null;
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+        console.error("[Auth] Empty token");
+        return null;
+    }
+
+    const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const sbKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!sbUrl || !sbKey) {
+        console.error("[Auth] Missing Supabase Environment Variables on Server");
+        // We throw to catch this specific config error if possible, or just return null and log
+        return null;
+    }
+
+    const supabase = createClient(sbUrl, sbKey);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+        console.error("[Auth] Supabase getUser failed:", error);
+        return null;
+    }
+
     return user;
 }
 
@@ -80,7 +106,10 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const user = await getUser(req);
-        if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!user) {
+            console.error("POST /timeline: Unauthorized access attempt");
+            return NextResponse.json({ error: "Unauthorized: Please login again or check server logs." }, { status: 401 });
+        }
 
         const body = await req.json();
 
