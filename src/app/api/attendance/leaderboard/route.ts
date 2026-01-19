@@ -1,8 +1,10 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-    const now = new Date();
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const dateParam = searchParams.get('date');
+    const now = dateParam ? new Date(dateParam) : new Date();
 
     // awal minggu (Senin)
     const startOfWeek = new Date(now);

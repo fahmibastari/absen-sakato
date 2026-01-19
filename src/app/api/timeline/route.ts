@@ -16,8 +16,12 @@ export async function GET(req: Request) {
     try {
         const user = await getUser(req);
 
-        // Update lastViewedTimeline if user is authenticated
-        if (user) {
+        // Parse Query Params
+        const { searchParams } = new URL(req.url);
+        const type = searchParams.get('type') || 'POST'; // Default to POST (Tweets)
+
+        // Update lastViewedTimeline if user is authenticated (only for main timeline)
+        if (user && type === 'POST') {
             // Fire and forget update
             (prisma as any).user.update({
                 where: { id: user.id },
@@ -49,6 +53,10 @@ export async function GET(req: Request) {
         };
 
         const posts = await prisma.post.findMany({
+            where: {
+                // @ts-ignore - Prisma Type issue with dynamic enum access sometimes
+                type: type === 'ANNOUNCEMENT' ? 'ANNOUNCEMENT' : 'POST'
+            },
             include: includeQuery,
             orderBy: {
                 createdAt: 'desc'
@@ -81,10 +89,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Content is required" }, { status: 400 });
         }
 
+        const postType = body.type === 'ANNOUNCEMENT' ? 'ANNOUNCEMENT' : 'POST';
+
         const newPost = await prisma.post.create({
             data: {
                 content: body.content,
-                userId: user.id
+                userId: user.id,
+                // @ts-ignore
+                type: postType
             },
             include: {
                 user: {
@@ -100,6 +112,10 @@ export async function POST(req: Request) {
 
         // NOTIFICATION LOGIC
         try {
+            // Only send global push for POSTs or ANNOUNCEMENTS? 
+            // Maybe Announcements should definitely push.
+            // For now, keep existing logic but maybe differentiate message for Announcement.
+
             // 1. Detect Mentions
             const mentionRegex = /@(\w+)/g;
             const matches = body.content.match(mentionRegex);
@@ -148,28 +164,28 @@ export async function POST(req: Request) {
                 }
             }
 
-            // 2. "New Post" Global Notification
-            // Broadcast to all users who have push subscriptions (except self)
-            // Optimization: In a real large app, this should be a background queue. 
-            // Here we do a simple "send to all endpoints" via our helper or custom logic.
+            // 2. Global Notification (Broadcast)
+            // Announcement should DEFINITELY broadcast.
+            // Regular posts also broadcast (existing feature).
 
-            // Fetch ALL subscriptions except sender
-            // Note: This might be heavy if users > 1000. For now it's fine.
             const allSubscriptions = await (prisma as any).pushSubscription.findMany({
                 where: {
                     userId: { not: user.id }
                 },
-                select: { userId: true } // Just need distinct userIds to target
+                select: { userId: true }
             });
 
             // Get unique user IDs to avoid duplicate sends if user has multiple devices (handled by sendPushNotification implementation slightly efficiently)
             const uniqueUserIds = Array.from(new Set(allSubscriptions.map((s: any) => s.userId)));
 
             // Fire and forget push
-            const senderName = user.user_metadata?.username || "Someone"; // Fallback if Supabase user doesn't carry username easily (or fetch from DB)
-            // Actually better to fetch from DB for accurate username
             const senderProfileForGlobal = await prisma.user.findUnique({ where: { id: user.id }, select: { username: true } });
             const displayName = senderProfileForGlobal?.username || "Someone";
+
+            const title = postType === 'ANNOUNCEMENT' ? '📢 New Announcement' : 'New Post';
+            const bodyText = postType === 'ANNOUNCEMENT'
+                ? `@${displayName}: ${body.content.substring(0, 50)}...`
+                : `@${displayName} posted on timeline`;
 
             // Limit broadcast to avoid timeout?
             // Let's send to first 50 for safety in this valid iteration, or just loop all. 
@@ -180,8 +196,8 @@ export async function POST(req: Request) {
             uniqueUserIds.forEach((recipientId: any) => {
                 sendPushNotification(
                     recipientId,
-                    "New Post",
-                    `@${displayName} posted on timeline`,
+                    title,
+                    bodyText,
                     `/timeline`
                 );
             });

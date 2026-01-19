@@ -14,6 +14,7 @@ export async function GET() {
             user: {
                 select: {
                     id: true,
+                    username: true,
                     fullName: true,
                     avatarUrl: true,
                 }
@@ -29,6 +30,7 @@ export async function GET() {
         const time = s.checkIn ? s.checkIn : new Date();
         return {
             id: s.user.id,
+            username: s.user.username,
             fullName: s.user.fullName,
             avatarUrl: s.user.avatarUrl,
             checkInTime: time.toISOString()

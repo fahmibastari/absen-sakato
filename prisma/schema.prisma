@@ -40,10 +40,16 @@ model User {
   comments              Comment[]
 }
 
+enum PostType {
+  POST
+  ANNOUNCEMENT
+}
+
 model Post {
   id        String   @id @default(uuid())
   content   String
   userId    String
+  type      PostType @default(POST)
   createdAt DateTime @default(now())
   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

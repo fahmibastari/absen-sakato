@@ -189,7 +189,7 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                         <h3 className="text-xl font-bold text-brown-900 flex items-center gap-2">
                             <Clock size={20} />
-                            Today's Activity
+                            Riwayat Aktivitas
                         </h3>
                     </div>
                     <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-6">

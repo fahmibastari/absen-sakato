@@ -134,7 +134,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
 
     return (
         <>
-            <Card className="mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden">
+            <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden p-0">
                 <div className="flex gap-3 md:gap-4 p-4 md:p-6 pb-2">
                     {/* Avatar */}
                     <div className="flex-shrink-0 cursor-pointer" onClick={() => openProfile(post.user.username)}>

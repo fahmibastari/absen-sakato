@@ -140,6 +140,13 @@ export default function AdminDashboard() {
                         icon={<QrCode size={32} />}
                         color="green"
                     />
+                    <AdminActionCard
+                        href="/admin/sessions"
+                        title="Active Sessions"
+                        description="Manual checkout for active users"
+                        icon={<Clock size={32} />}
+                        color="red"
+                    />
                 </div>
             </div>
         </div>
@@ -151,7 +158,7 @@ type ActionCardProps = {
     title: string;
     description: string;
     icon: React.ReactNode;
-    color: 'blue' | 'mustard' | 'purple' | 'green';
+    color: 'blue' | 'mustard' | 'purple' | 'green' | 'red';
 };
 
 function AdminActionCard({ href, title, description, icon, color }: ActionCardProps) {
@@ -160,6 +167,7 @@ function AdminActionCard({ href, title, description, icon, color }: ActionCardPr
         mustard: 'from-mustard-100 to-mustard-50 hover:from-mustard-200 text-mustard-700 border-mustard-200',
         purple: 'from-purple-100 to-purple-50 hover:from-purple-200 text-purple-700 border-purple-200',
         green: 'from-green-100 to-green-50 hover:from-green-200 text-green-700 border-green-200',
+        red: 'from-red-100 to-red-50 hover:from-red-200 text-red-700 border-red-200',
     };
 
     return (

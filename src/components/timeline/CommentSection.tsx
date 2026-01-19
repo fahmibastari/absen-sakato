@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Send, Loader2, Trash2 } from 'lucide-react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link'; // Still keeping Link for safe measure, but mostly using onClick
+import { UserPreviewModal } from '@/components/timeline/UserPreviewModal';
 
 interface Comment {
     id: string;
@@ -44,6 +45,14 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
     const [mentionResults, setMentionResults] = useState<SearchUser[]>([]);
     const [cursorPosition, setCursorPosition] = useState(0);
 
+    // Profile Modal State
+    const [previewUsername, setPreviewUsername] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openProfile = (username: string) => {
+        setPreviewUsername(username);
+        setIsModalOpen(true);
+    };
 
     // RESTORED: Input Ref for focus and reply handling
     const [inputEl, setInputEl] = useState<HTMLInputElement | null>(null);
@@ -149,9 +158,13 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
             if (part.match(/^@\w+$/)) {
                 const username = part.substring(1);
                 return (
-                    <Link key={index} href={`/profile/${username}`} className="text-blue-500 hover:underline font-medium">
+                    <span
+                        key={index}
+                        onClick={() => openProfile(username)}
+                        className="text-blue-500 hover:underline font-medium cursor-pointer"
+                    >
                         {part}
-                    </Link>
+                    </span>
                 );
             }
             return part;
@@ -199,33 +212,39 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
             {/* Comment List */}
             <div className="space-y-4 mb-4">
                 {comments.length === 0 ? (
-                    <p className="text-xs text-center text-gray-400 py-4 italic">Belum ada komentar.</p>
+                    <p className="text-xs text-center text-gray-400 py-4 italic">
+                        {error ? <span className="text-red-400">{error}</span> : "Belum ada komentar."}
+                    </p>
                 ) : (
                     comments.map(comment => (
                         <div key={comment.id} className="flex gap-3 text-[13px] group">
                             <div className="flex-shrink-0">
-                                <Link href={`/profile/${comment.user.username}`}>
-                                    <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden relative border border-gray-100">
-                                        {comment.user.avatarUrl ? (
-                                            <Image
-                                                src={comment.user.avatarUrl}
-                                                alt={comment.user.fullName}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <span className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-[10px]">
-                                                {comment.user.fullName.charAt(0)}
-                                            </span>
-                                        )}
-                                    </div>
-                                </Link>
+                                <div
+                                    onClick={() => openProfile(comment.user.username)}
+                                    className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden relative border border-gray-100 cursor-pointer"
+                                >
+                                    {comment.user.avatarUrl ? (
+                                        <Image
+                                            src={comment.user.avatarUrl}
+                                            alt={comment.user.fullName}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <span className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-[10px]">
+                                            {comment.user.fullName.charAt(0)}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="leading-snug">
-                                    <Link href={`/profile/${comment.user.username}`} className="font-semibold text-gray-900 mr-2 hover:underline">
+                                    <span
+                                        onClick={() => openProfile(comment.user.username)}
+                                        className="font-semibold text-gray-900 mr-2 hover:underline cursor-pointer"
+                                    >
                                         {comment.user.username}
-                                    </Link>
+                                    </span>
                                     <span className="text-gray-800 break-words">{renderContent(comment.content)}</span>
                                 </div>
                                 <div className="flex gap-4 mt-1">
@@ -296,6 +315,12 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                     {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Kirim'}
                 </button>
             </form>
+
+            <UserPreviewModal
+                username={previewUsername}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 }

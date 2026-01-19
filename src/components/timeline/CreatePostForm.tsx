@@ -13,9 +13,14 @@ interface SearchUser {
     avatarUrl: string | null;
 }
 
-export default function CreatePostForm({ onPostCreated }: { onPostCreated: () => void }) {
+export default function CreatePostForm({ onPostCreated, defaultType = 'POST' }: { onPostCreated: () => void, defaultType?: 'POST' | 'ANNOUNCEMENT' }) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [postType, setPostType] = useState<'POST' | 'ANNOUNCEMENT'>(defaultType);
+
+    useEffect(() => {
+        setPostType(defaultType);
+    }, [defaultType]);
 
     // Mention State
     const [showMentions, setShowMentions] = useState(false);
@@ -105,7 +110,7 @@ export default function CreatePostForm({ onPostCreated }: { onPostCreated: () =>
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({ content })
+                body: JSON.stringify({ content, type: postType })
             });
 
             if (res.ok) {
@@ -123,22 +128,22 @@ export default function CreatePostForm({ onPostCreated }: { onPostCreated: () =>
     }
 
     return (
-        <Card className="mb-8 overflow-visible z-20 relative">
+        <Card className="mb-6 overflow-visible z-20 relative border-none shadow-sm ring-1 ring-gray-100">
             <form onSubmit={handleSubmit}>
-                <div className="relative">
+                <div className="relative p-1">
                     <textarea
                         ref={textareaRef}
                         value={content}
                         onChange={handleContentChange}
-                        placeholder="Hayo mau ngomong apa?"
-                        className="w-full bg-white/50 border border-brown-200 rounded-xl p-3 md:p-4 pr-12 text-brown-900 placeholder:text-brown-400 focus:outline-none focus:ring-2 focus:ring-mustard-500 min-h-[80px] md:min-h-[100px] resize-none transition-all text-sm md:text-base"
+                        placeholder={postType === 'ANNOUNCEMENT' ? "Tulis pengumuman penting..." : "Hayo mau ngomong apa?"}
+                        className="w-full bg-transparent p-3 md:p-4 pr-12 text-brown-900 placeholder:text-brown-400 focus:outline-none min-h-[80px] md:min-h-[100px] resize-none transition-all text-sm md:text-base block"
                         maxLength={280}
                     />
 
                     {/* Mention Dropdown */}
                     {showMentions && mentionResults.length > 0 && (
-                        <div className="absolute top-full left-0 mt-2 w-64 bg-white/90 backdrop-blur-md rounded-xl shadow-xl border border-mustard-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <div className="p-2 border-b border-mustard-50 text-xs font-semibold text-brown-400 uppercase tracking-wider">
+                        <div className="absolute top-full left-0 mt-2 w-64 bg-white/90 backdrop-blur-md rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="p-2 border-b border-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                                 Suggestions
                             </div>
                             {mentionResults.map(user => (
@@ -146,37 +151,45 @@ export default function CreatePostForm({ onPostCreated }: { onPostCreated: () =>
                                     key={user.id}
                                     type="button"
                                     onClick={() => selectMention(user)}
-                                    className="w-full text-left p-3 hover:bg-mustard-50 transition-colors flex items-center gap-3"
+                                    className="w-full text-left p-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
                                 >
                                     <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                                         {user.avatarUrl ? (
                                             <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full bg-mustard-100 flex items-center justify-center">
-                                                <User size={14} className="text-mustard-600" />
+                                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                                <User size={14} className="text-gray-500" />
                                             </div>
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-brown-900 truncate">{user.fullName}</p>
-                                        <p className="text-xs text-brown-500 truncate">@{user.username}</p>
+                                        <p className="text-sm font-bold text-gray-900 truncate">{user.fullName}</p>
+                                        <p className="text-xs text-gray-500 truncate">@{user.username}</p>
                                     </div>
                                 </button>
                             ))}
                         </div>
                     )}
 
-                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                        <span className={`text-xs ${content.length > 250 ? 'text-red-500' : 'text-brown-400'}`}>
-                            {content.length}/280
-                        </span>
-                        <button
-                            type="submit"
-                            disabled={!content.trim() || isSubmitting}
-                            className="bg-mustard-600 hover:bg-mustard-700 text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-                        >
-                            {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                        </button>
+                    <div className="flex items-center justify-between px-2 pb-2 mt-2">
+                        <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${postType === 'ANNOUNCEMENT' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
+                                {postType === 'ANNOUNCEMENT' ? 'Pengumuman' : 'Timeline'}
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <span className={`text-xs ${content.length > 250 ? 'text-red-500' : 'text-gray-300'}`}>
+                                {content.length}/280
+                            </span>
+                            <button
+                                type="submit"
+                                disabled={!content.trim() || isSubmitting}
+                                className="bg-brown-900 hover:bg-brown-800 text-white px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
+                            >
+                                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : 'Posting'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>

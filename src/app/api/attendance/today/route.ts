@@ -12,7 +12,7 @@ export async function GET() {
         where: {
             checkOut: { not: null }
         },
-        take: 10, // Limit to 10 recent activities
+        take: 50, // Limit to 50 recent activities to show multi-day history
         include: {
             user: true,
         },

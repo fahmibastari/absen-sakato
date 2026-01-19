@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Award, Clock, Trophy, Medal } from 'lucide-react';
+import { Award, Clock, Trophy, Medal, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 type LeaderboardItem = {
     userId: string;
@@ -13,17 +15,29 @@ type LeaderboardItem = {
 
 export default function LeaderboardPage() {
     const [data, setData] = useState<{ users: LeaderboardItem[], admins: LeaderboardItem[] }>({ users: [], admins: [] });
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     useEffect(() => {
-        fetch('/api/attendance/leaderboard')
+        const dateStr = currentDate.toISOString();
+        fetch(`/api/attendance/leaderboard?date=${dateStr}`)
             .then(res => res.json())
             .then(setData);
-    }, []);
+    }, [currentDate]);
+
+    const handlePrevWeek = () => setCurrentDate(prev => subWeeks(prev, 1));
+    const handleNextWeek = () => setCurrentDate(prev => addWeeks(prev, 1));
+
+    const isCurrentWeek = new Date().toDateString() === currentDate.toDateString() || currentDate > new Date();
+
+    // Calculate display range
+    const start = startOfWeek(currentDate, { weekStartsOn: 1 });
+    const end = endOfWeek(currentDate, { weekStartsOn: 1 });
+    const dateRange = `${format(start, 'd MMM', { locale: id })} - ${format(end, 'd MMM yyyy', { locale: id })}`;
 
     const formatDuration = (seconds: number) => {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
-        return `${h}h ${m}m`;
+        return `${h} J ${m} M`;
     }
 
     const top3 = data.users.slice(0, 3);
@@ -33,9 +47,32 @@ export default function LeaderboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-brown-50 via-white to-mustard-50 pb-24 md:pl-72 pt-8 px-6">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-4xl font-bold text-brown-900 mb-1">Leaderboard</h1>
-                <p className="text-brown-600">Top performers this week</p>
+            <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-4xl font-bold text-brown-900 mb-1">Leaderboard</h1>
+                    <p className="text-brown-600">Keliatan banget gapunya rumahnya tuh</p>
+                </div>
+
+                {/* Week Navigation */}
+                <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-brown-200 shadow-sm">
+                    <button
+                        onClick={handlePrevWeek}
+                        className="p-2 hover:bg-brown-50 rounded-lg text-brown-600 transition-colors"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div className="flex items-center gap-2 px-2 text-sm font-semibold text-brown-800 min-w-[140px] justify-center">
+                        <Calendar size={16} className="text-mustard-600" />
+                        {dateRange}
+                    </div>
+                    <button
+                        onClick={handleNextWeek}
+                        disabled={isCurrentWeek} // Logic: can't go to future weeks if we assume date resets to "now"
+                        className={`p-2 rounded-lg transition-colors ${isCurrentWeek ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-brown-50 text-brown-600'}`}
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
             </div>
 
             {/* Podium Visual - Top 3 */}
@@ -124,34 +161,40 @@ export default function LeaderboardPage() {
                 </div>
             )}
 
-            {/* Rest of Rankings  */}
             {rest.length > 0 && (
-                <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-6 mb-8">
-                    <h2 className="text-xl font-bold text-brown-900 mb-6">Other Rankings</h2>
-                    <div className="space-y-3">
+                <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-5 mb-8">
+                    <h2 className="text-lg font-bold text-brown-900 mb-4 px-1">Other Rankings</h2>
+                    <div className="space-y-2">
                         {rest.map((leader, index) => {
                             const rank = index + 4;
                             return (
-                                <div key={leader.userId} className="flex items-center justify-between p-4 bg-brown-50 rounded-xl hover:bg-brown-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-white border border-brown-200 flex items-center justify-center font-bold text-brown-700 shadow-sm">
+                                <div key={leader.userId} className="flex items-center p-3 bg-brown-50/50 rounded-xl hover:bg-brown-50 transition-colors border border-transparent hover:border-brown-100">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        {/* Rank */}
+                                        <div className="w-8 h-8 flex-shrink-0 rounded-lg bg-white border border-brown-200 flex items-center justify-center font-bold text-sm text-brown-700 shadow-sm">
                                             {rank}
                                         </div>
-                                        <div className="w-12 h-12 rounded-full border-2 border-brown-300 bg-brown-100 flex items-center justify-center overflow-hidden">
+
+                                        {/* Avatar */}
+                                        <div className="w-10 h-10 flex-shrink-0 rounded-full border-2 border-brown-200 bg-brown-100 flex items-center justify-center overflow-hidden">
                                             {leader.avatarUrl ? (
                                                 <img src={leader.avatarUrl} alt={leader.fullName} className="w-full h-full object-cover" />
                                             ) : (
-                                                <span className="font-bold text-lg text-brown-700">{leader.fullName[0]}</span>
+                                                <span className="font-bold text-sm text-brown-700">{leader.fullName[0]}</span>
                                             )}
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-brown-900">{leader.fullName}</h3>
-                                            <p className="text-xs text-brown-600">@{leader.username}</p>
+
+                                        {/* Name */}
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="font-bold text-sm text-brown-900 truncate pr-2">{leader.fullName}</h3>
+                                            <p className="text-[10px] text-brown-500 truncate">@{leader.username}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-brown-600">
-                                        <Clock size={16} />
-                                        <span className="font-mono font-bold">{formatDuration(leader.total)}</span>
+
+                                    {/* Duration */}
+                                    <div className="flex items-center gap-1.5 text-brown-600 pl-2">
+                                        <Clock size={14} className="opacity-70" />
+                                        <span className="font-mono font-bold text-sm">{formatDuration(leader.total)}</span>
                                     </div>
                                 </div>
                             );

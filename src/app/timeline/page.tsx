@@ -27,8 +27,11 @@ export default function TimelinePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'POST' | 'ANNOUNCEMENT'>('POST');
 
-    async function fetchPosts() {
+    async function fetchPosts(type?: 'POST' | 'ANNOUNCEMENT') {
+        const targetType = type || activeTab;
+        setIsLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const headers: HeadersInit = {};
@@ -37,7 +40,7 @@ export default function TimelinePage() {
                 setCurrentUserId(session.user.id);
             }
 
-            const res = await fetch('/api/timeline', { headers });
+            const res = await fetch(`/api/timeline?type=${targetType}`, { headers });
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data);
@@ -51,7 +54,7 @@ export default function TimelinePage() {
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [activeTab]); // Refetch when tab changes
 
     const handleDelete = (postId: string) => {
         setPosts(posts.filter(p => p.id !== postId));
@@ -60,24 +63,46 @@ export default function TimelinePage() {
     return (
         <div className="max-w-2xl mx-auto p-4 md:p-8">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <h1 className="text-3xl font-bold text-brown-900 flex items-center gap-3">
                     <div className="p-2 bg-mustard-100 rounded-xl text-mustard-700">
                         <MessageCircle size={28} />
                     </div>
-                    Timeline
+                    SAKAToday
                 </h1>
                 <p className="text-brown-500 mt-2">Sosmed aseli Sakato loh ya.</p>
             </div>
 
-            {/* Notification Permission Request */}
+            {/* Sleek Tabs */}
+            <div className="flex border-b border-gray-200 mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-30 pt-2">
+                <button
+                    onClick={() => setActiveTab('POST')}
+                    className={`flex-1 py-3 text-sm font-semibold relative transition-colors ${activeTab === 'POST' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    Timeline
+                    {activeTab === 'POST' && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-mustard-600 rounded-t-full" />
+                    )}
+                </button>
+                <button
+                    onClick={() => setActiveTab('ANNOUNCEMENT')}
+                    className={`flex-1 py-3 text-sm font-semibold relative transition-colors ${activeTab === 'ANNOUNCEMENT' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    Pengumuman
+                    {activeTab === 'ANNOUNCEMENT' && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-mustard-600 rounded-t-full" />
+                    )}
+                </button>
+            </div>
+
+            {/* Check Notification Permission */}
             <NotificationPermission />
 
-            {/* Create Post */}
-            <CreatePostForm onPostCreated={fetchPosts} />
+            {/* Create Post - Context Aware */}
+            <CreatePostForm onPostCreated={fetchPosts} defaultType={activeTab} />
 
             {/* Feed */}
-            <div className="space-y-4">
+            <div className="space-y-1">
                 {isLoading ? (
                     <div className="flex justify-center py-12">
                         <Loader2 className="animate-spin text-mustard-600" size={32} />
