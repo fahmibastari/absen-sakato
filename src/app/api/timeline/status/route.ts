@@ -1,18 +1,13 @@
+
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Helper to get user
 async function getUser(req: Request) {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) return null;
-
-    const token = authHeader.replace('Bearer ', '');
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) return null;
-
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
     const { data: { user } } = await supabase.auth.getUser(token);
-
     return user;
 }
 
@@ -20,30 +15,40 @@ export async function GET(req: Request) {
     try {
         const user = await getUser(req);
         if (!user) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json({ hasNewPosts: false, hasNewAnnouncements: false });
         }
 
-        // 1. Get user's last viewed time
-        const dbUser = await (prisma as any).user.findUnique({
+        const userData = await prisma.user.findUnique({
             where: { id: user.id },
-            select: { lastViewedTimeline: true }
+            select: { lastViewedTimeline: true, lastViewedAnnouncement: true }
         });
 
-        if (!dbUser) return NextResponse.json({ hasNewPosts: false });
+        if (!userData) {
+            return NextResponse.json({ hasNewPosts: false, hasNewAnnouncements: false });
+        }
 
-        // 2. Check if there are any posts created AFTER that time
-        const newPost = await prisma.post.findFirst({
-            where: {
-                createdAt: {
-                    gt: dbUser.lastViewedTimeline
+        const [newPostsCount, newAnnouncementsCount] = await Promise.all([
+            prisma.post.count({
+                where: {
+                    type: 'POST',
+                    createdAt: { gt: userData.lastViewedTimeline }
                 }
-            },
-            select: { id: true } // We only need to know if ONE exists
+            }),
+            prisma.post.count({
+                where: {
+                    type: 'ANNOUNCEMENT',
+                    createdAt: { gt: userData.lastViewedAnnouncement }
+                }
+            })
+        ]);
+
+        return NextResponse.json({
+            hasNewPosts: newPostsCount > 0,
+            hasNewAnnouncements: newAnnouncementsCount > 0
         });
 
-        return NextResponse.json({ hasNewPosts: !!newPost });
     } catch (error) {
         console.error("Error checking timeline status:", error);
-        return NextResponse.json({ hasNewPosts: false });
+        return NextResponse.json({ hasNewPosts: false, hasNewAnnouncements: false });
     }
 }

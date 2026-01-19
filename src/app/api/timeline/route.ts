@@ -47,12 +47,19 @@ export async function GET(req: Request) {
         const type = searchParams.get('type') || 'POST'; // Default to POST (Tweets)
 
         // Update lastViewedTimeline if user is authenticated (only for main timeline)
-        if (user && type === 'POST') {
+        if (user) {
+            const now = new Date();
             // Fire and forget update
-            (prisma as any).user.update({
-                where: { id: user.id },
-                data: { lastViewedTimeline: new Date() }
-            }).catch((err: any) => console.error("Failed to update lastViewedTimeline", err));
+            const updateData: any = {};
+            if (type === 'POST') updateData.lastViewedTimeline = now;
+            if (type === 'ANNOUNCEMENT') updateData.lastViewedAnnouncement = now;
+
+            if (Object.keys(updateData).length > 0) {
+                (prisma as any).user.update({
+                    where: { id: user.id },
+                    data: updateData
+                }).catch((err: any) => console.error("Failed to update lastViewed", err));
+            }
         }
 
         const includeQuery = {

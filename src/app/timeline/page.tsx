@@ -29,6 +29,8 @@ export default function TimelinePage() {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'POST' | 'ANNOUNCEMENT'>('POST');
 
+    const [status, setStatus] = useState({ hasNewPosts: false, hasNewAnnouncements: false });
+
     async function fetchPosts(type?: 'POST' | 'ANNOUNCEMENT') {
         const targetType = type || activeTab;
         setIsLoading(true);
@@ -44,6 +46,8 @@ export default function TimelinePage() {
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data);
+                // Refresh status to clear the dot for current tab
+                fetchStatus();
             }
         } catch (error) {
             console.error("Failed to fetch timeline", error);
@@ -52,21 +56,46 @@ export default function TimelinePage() {
         }
     }
 
+    async function fetchStatus() {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+            const res = await fetch('/api/timeline/status', {
+                headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            if (res.ok) {
+                setStatus(await res.json());
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     useEffect(() => {
         fetchPosts();
-    }, [activeTab]); // Refetch when tab changes
+        // Poll status every minute? Or just once. Just once is safer for now.
+        fetchStatus();
+    }, [activeTab]);
 
     const handleDelete = (postId: string) => {
         setPosts(posts.filter(p => p.id !== postId));
     };
 
+    const hasAnyNotification = status.hasNewPosts || status.hasNewAnnouncements;
+
     return (
         <div className="max-w-2xl mx-auto p-4 md:p-8">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-brown-900 flex items-center gap-3">
-                    <div className="p-2 bg-mustard-100 rounded-xl text-mustard-700">
+                <h1 className="text-3xl font-bold text-brown-900 flex items-center gap-3 relative w-fit">
+                    <div className="p-2 bg-mustard-100 rounded-xl text-mustard-700 relative">
                         <MessageCircle size={28} />
+                        {hasAnyNotification && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                            </span>
+                        )}
                     </div>
                     SAKAToday
                 </h1>
@@ -79,7 +108,12 @@ export default function TimelinePage() {
                     onClick={() => setActiveTab('POST')}
                     className={`flex-1 py-3 text-sm font-semibold relative transition-colors ${activeTab === 'POST' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    Timeline
+                    <div className="flex items-center justify-center gap-2">
+                        Timeline
+                        {status.hasNewPosts && activeTab !== 'POST' && (
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        )}
+                    </div>
                     {activeTab === 'POST' && (
                         <div className="absolute bottom-0 left-0 w-full h-1 bg-mustard-600 rounded-t-full" />
                     )}
@@ -88,7 +122,12 @@ export default function TimelinePage() {
                     onClick={() => setActiveTab('ANNOUNCEMENT')}
                     className={`flex-1 py-3 text-sm font-semibold relative transition-colors ${activeTab === 'ANNOUNCEMENT' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    Pengumuman
+                    <div className="flex items-center justify-center gap-2">
+                        Pengumuman
+                        {status.hasNewAnnouncements && activeTab !== 'ANNOUNCEMENT' && (
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        )}
+                    </div>
                     {activeTab === 'ANNOUNCEMENT' && (
                         <div className="absolute bottom-0 left-0 w-full h-1 bg-mustard-600 rounded-t-full" />
                     )}

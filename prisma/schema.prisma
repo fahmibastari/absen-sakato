@@ -37,6 +37,7 @@ model User {
   notificationsSent     Notification[] @relation("SentNotifications")
   pushSubscriptions     PushSubscription[]
   lastViewedTimeline    DateTime @default(now())
+  lastViewedAnnouncement DateTime @default(now())
   comments              Comment[]
 }
 
