@@ -9,8 +9,8 @@ export const Input: React.FC<InputProps> = ({ label, className = '', ...props })
         <div className="relative group">
             <input
                 className={`
-          w-full bg-coffee-800/50 border border-coffee-600/30 rounded-xl px-4 pt-6 pb-2 
-          text-coffee-100 outline-none focus:border-coffee-300 transition-all peer
+          w-full bg-white border-2 border-neo-black rounded-none px-4 pt-6 pb-2 
+          text-neo-black outline-none focus:bg-neo-yellow/10 transition-all peer
           placeholder-transparent
           ${className}
         `}
@@ -19,10 +19,10 @@ export const Input: React.FC<InputProps> = ({ label, className = '', ...props })
             />
             <label
                 className="
-          absolute left-4 top-4 text-coffee-400 text-sm transition-all pointer-events-none
-          peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-coffee-500
-          peer-focus:top-1 peer-focus:text-xs peer-focus:text-coffee-300
-          peer-not-placeholder-shown:top-1 peer-not-placeholder-shown:text-xs
+          absolute left-4 top-4 text-gray-500 text-sm transition-all pointer-events-none font-bold
+          peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-500
+          peer-focus:top-1 peer-focus:text-xs peer-focus:text-neo-black
+          peer-not-placeholder-shown:top-1 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-neo-black
         "
             >
                 {label}
@@ -36,8 +36,8 @@ export const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement
         <div className="relative group">
             <textarea
                 className={`
-          w-full bg-coffee-800/50 border border-coffee-600/30 rounded-xl px-4 pt-6 pb-2 
-          text-coffee-100 outline-none focus:border-coffee-300 transition-all peer resize-none
+          w-full bg-white border-2 border-neo-black rounded-none px-4 pt-6 pb-2 
+          text-neo-black outline-none focus:bg-neo-yellow/10 transition-all peer resize-none
           placeholder-transparent
           ${className}
         `}
@@ -46,10 +46,10 @@ export const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement
             />
             <label
                 className="
-          absolute left-4 top-4 text-coffee-400 text-sm transition-all pointer-events-none
-          peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-coffee-500
-          peer-focus:top-1 peer-focus:text-xs peer-focus:text-coffee-300
-          peer-not-placeholder-shown:top-1 peer-not-placeholder-shown:text-xs
+          absolute left-4 top-4 text-gray-500 text-sm transition-all pointer-events-none font-bold
+          peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-500
+          peer-focus:top-1 peer-focus:text-xs peer-focus:text-neo-black
+          peer-not-placeholder-shown:top-1 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-neo-black
         "
             >
                 {label}

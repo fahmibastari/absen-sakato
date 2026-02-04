@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import SpinWheel from '@/components/SpinWheel';
 import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase';
-import { Trophy, Crown, Star } from 'lucide-react';
+import { Trophy, Crown, Star, Sparkles } from 'lucide-react';
 
 type UserRank = {
     userId: string;
@@ -28,7 +28,7 @@ export default function GamificationPage() {
         if (menuRes.ok) {
             const menuData = await menuRes.json();
             const names = menuData.filter((m: any) => m.isAvailable).map((m: any) => m.name);
-            setMenus(names.length > 0 ? names : ['Zonk', 'Free Coffee', 'Hug', 'High Five']);
+            setMenus(names.length > 0 ? names : ['ZONK', 'FREE COFFEE', 'HUG', 'HIGH FIVE']);
         }
 
         // Fetch Candidates (Leaderboard)
@@ -40,65 +40,70 @@ export default function GamificationPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-brown-50 via-white to-purple-50 p-6 md:pl-72 pt-8 pb-24">
+        <div className="min-h-screen bg-neo-purple bg-dots p-6 md:pl-72 pt-8 pb-24 font-sans">
             {/* Header */}
-            <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                        <Trophy className="text-white" size={24} />
+            <div className="mb-8 bg-white border-4 border-neo-black p-6 shadow-neo flex items-center justify-between">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-16 h-16 bg-neo-yellow border-4 border-neo-black flex items-center justify-center transform rotate-3">
+                            <Trophy className="text-neo-black" size={32} strokeWidth={3} />
+                        </div>
+                        <div>
+                            <h1 className="text-5xl font-black text-neo-black uppercase tracking-tighter leading-none">WHEEL OF FORTUNE</h1>
+                            <p className="text-neo-black font-bold uppercase bg-neo-yellow inline-block px-2">Spin to WIN</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-4xl font-bold text-brown-900">Wheel of Fortune</h1>
-                        <p className="text-brown-600">Spin to reward top performers</p>
-                    </div>
+                </div>
+                <div className="hidden md:block">
+                    <Sparkles className="text-neo-black animate-spin-slow" size={64} />
                 </div>
             </div>
 
             {/* Main Grid Layout */}
             <div className="grid md:grid-cols-2 gap-8 items-start">
                 {/* Prize Wheel - Left */}
-                <Card className="bg-white border border-brown-100 shadow-xl order-2 md:order-1 p-8">
-                    <div className="flex items-center gap-2 mb-6">
-                        <Star className="text-mustard-500" size={24} />
-                        <h3 className="font-bold text-2xl text-brown-900">Prize Wheel</h3>
+                <Card className="bg-white border-4 border-neo-black shadow-neo-lg order-2 md:order-1 p-8 relative overflow-visible">
+                    <div className="absolute -top-6 -left-6 bg-neo-pink border-4 border-neo-black px-4 py-2 transform -rotate-6 shadow-neo-sm z-10">
+                        <h3 className="font-black text-2xl text-white uppercase">The Wheel</h3>
                     </div>
-                    <SpinWheel items={menus} onWin={(item) => console.log('Won:', item)} />
+
+                    <div className="mt-4 flex justify-center">
+                        <SpinWheel items={menus} onWin={(item) => alert(`WINNER: ${item}`)} />
+                    </div>
                 </Card>
 
                 {/* Candidates - Right */}
-                <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl order-1 md:order-2 p-8">
-                    <div className="flex items-center justify-between mb-6">
+                <Card className="bg-neo-black border-4 border-neo-black shadow-neo-lg order-1 md:order-2 p-0 overflow-hidden">
+                    <div className="bg-neo-yellow p-6 border-b-4 border-neo-black flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Crown size={28} />
-                            <h3 className="font-bold text-2xl">Top Candidates</h3>
+                            <Crown size={32} className="text-neo-black" strokeWidth={3} />
+                            <h3 className="font-black text-3xl text-neo-black uppercase">Top Agents</h3>
                         </div>
-                        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold">
-                            Top 5
+                        <span className="bg-neo-black text-white px-3 py-1 font-black uppercase text-sm transform rotate-3 border-2 border-white">
+                            Elite 5
                         </span>
                     </div>
 
-                    <div className="space-y-3">
-                        {candidates.length === 0 && <p className="text-purple-100 italic text-center py-8">No candidates yet.</p>}
+                    <div className="p-6 space-y-4">
+                        {candidates.length === 0 && <p className="text-white font-bold italic text-center py-8 uppercase">NO ELITE AGENTS YET.</p>}
 
                         {candidates.map((user, idx) => (
-                            <div key={user.userId} className="flex items-center justify-between p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${idx === 0 ? 'bg-mustard-500 text-white shadow-lg' :
-                                            'bg-white/20 text-white'
-                                        }`}>
-                                        {idx + 1}
+                            <div key={user.userId} className="flex items-center justify-between p-4 bg-white border-4 border-neo-black hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[4px_4px_0px_#FFF] transition-all group">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 flex items-center justify-center font-black text-xl border-2 border-neo-black ${idx === 0 ? 'bg-neo-pink text-white' : 'bg-gray-200 text-neo-black'}`}>
+                                        #{idx + 1}
                                     </div>
                                     <div>
-                                        <span className="font-bold text-white block">{user.fullName}</span>
-                                        <span className="text-xs text-purple-100">Top Performer</span>
+                                        <span className="font-black text-neo-black block uppercase text-lg group-hover:text-neo-pink transition-colors">{user.fullName}</span>
+                                        <span className="text-xs font-bold bg-neo-black text-white px-1 uppercase">Top Performer</span>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-mono font-bold text-white">
-                                        {Math.floor(user.total / 60)}h
+                                    <div className="font-mono font-black text-neo-black text-xl">
+                                        {Math.floor(user.total / 60)}H
                                     </div>
-                                    <div className="text-xs text-purple-100">
-                                        {user.total % 60}m
+                                    <div className="text-xs font-bold text-gray-500 uppercase">
+                                        {user.total % 60}M
                                     </div>
                                 </div>
                             </div>
@@ -106,10 +111,10 @@ export default function GamificationPage() {
                     </div>
 
                     {/* Info Box */}
-                    <div className="mt-6 p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl">
-                        <p className="text-sm text-purple-100 flex items-center gap-2">
-                            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs">i</span>
-                            Top candidate gets to spin the wheel for a free menu item!
+                    <div className="p-4 bg-neo-blue border-t-4 border-neo-black">
+                        <p className="text-sm text-white font-bold flex items-center gap-2 uppercase">
+                            <span className="w-6 h-6 bg-white text-neo-black border-2 border-neo-black flex items-center justify-center font-black text-xs">i</span>
+                            Rank #1 gets a free spin!
                         </p>
                     </div>
                 </Card>

@@ -40,82 +40,75 @@ export default function AdminDashboard() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-brown-50 via-white to-red-50 p-6 md:pl-72 pt-8">
+        <div className="min-h-screen bg-neo-white p-6 md:pl-72 pt-8 font-sans">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-4xl font-bold text-brown-900 mb-1">Admin Dashboard</h1>
-                <p className="text-brown-600">Manage your coffee shop ecosystem</p>
+            <div className="mb-8 border-b-4 border-neo-black pb-4">
+                <h1 className="text-5xl font-black text-neo-black uppercase tracking-tighter mb-2">Admin Panel</h1>
+                <p className="text-xl font-bold text-gray-600 uppercase">Command Center</p>
             </div>
 
             {/* Stats Overview - 4 Column */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <p className="text-blue-100 text-sm mb-1">Total Users</p>
-                            <h3 className="text-3xl font-bold">{stats.users}</h3>
-                            <p className="text-xs text-blue-100 mt-2 flex items-center gap-1">
-                                <TrendingUp size={12} />
-                                Registered members
-                            </p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Users size={24} />
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <Card className="bg-white border-4 border-neo-black shadow-neo-lg hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all relative">
+                    <div className="absolute top-0 right-0 p-2 bg-neo-blue text-white border-l-4 border-b-4 border-neo-black">
+                        <Users size={24} strokeWidth={3} />
+                    </div>
+                    <div className="pt-8">
+                        <h3 className="text-5xl font-black text-neo-black mb-1">{stats.users}</h3>
+                        <p className="text-sm font-black uppercase bg-neo-blue text-white inline-block px-2 py-1 transform -rotate-2">
+                            Registered Users
+                        </p>
                     </div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg">
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <p className="text-green-100 text-sm mb-1">Active Now</p>
-                            <h3 className="text-3xl font-bold">{stats.active}</h3>
-                            <p className="text-xs text-green-100 mt-2 flex items-center gap-1">
-                                <Activity size={12} />
-                                Live tracking
-                            </p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Clock size={24} />
-                        </div>
+                <Card className="bg-white border-4 border-neo-black shadow-neo-lg hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all relative">
+                    <div className="absolute top-0 right-0 p-2 bg-neo-green text-neo-black border-l-4 border-b-4 border-neo-black">
+                        <Clock size={24} strokeWidth={3} />
+                    </div>
+                    <div className="pt-8">
+                        <h3 className="text-5xl font-black text-neo-black mb-1">{stats.active}</h3>
+                        <p className="text-sm font-black uppercase bg-neo-green text-neo-black inline-block px-2 py-1 transform rotate-1">
+                            Active Now
+                        </p>
                     </div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-mustard-500 to-mustard-600 text-white border-0 shadow-lg">
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <p className="text-mustard-100 text-sm mb-1">Menu Items</p>
-                            <h3 className="text-3xl font-bold">{stats.menus}</h3>
-                            <p className="text-xs text-mustard-100 mt-2">Coffee & Snacks</p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Coffee size={24} />
-                        </div>
+                <Card className="bg-white border-4 border-neo-black shadow-neo-lg hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all relative">
+                    <div className="absolute top-0 right-0 p-2 bg-neo-yellow text-neo-black border-l-4 border-b-4 border-neo-black">
+                        <Coffee size={24} strokeWidth={3} />
+                    </div>
+                    <div className="pt-8">
+                        <h3 className="text-5xl font-black text-neo-black mb-1">{stats.menus}</h3>
+                        <p className="text-sm font-black uppercase bg-neo-yellow text-neo-black inline-block px-2 py-1 transform -rotate-1">
+                            Menu Items
+                        </p>
                     </div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <p className="text-purple-100 text-sm mb-1">Weekly Winner</p>
-                            <h3 className="text-lg font-bold">Ready to Spin</h3>
-                            <p className="text-xs text-purple-100 mt-2">Gamification Active</p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Trophy size={24} />
-                        </div>
+                <Card className="bg-white border-4 border-neo-black shadow-neo-lg hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all relative">
+                    <div className="absolute top-0 right-0 p-2 bg-neo-pink text-white border-l-4 border-b-4 border-neo-black">
+                        <Trophy size={24} strokeWidth={3} />
+                    </div>
+                    <div className="pt-8">
+                        <h3 className="text-3xl font-black text-neo-black mb-1 truncate">READY</h3>
+                        <p className="text-sm font-black uppercase bg-neo-pink text-white inline-block px-2 py-1 transform rotate-2">
+                            Gamification
+                        </p>
                     </div>
                 </Card>
             </div>
 
             {/* Quick Actions Grid */}
             <div>
-                <h2 className="text-2xl font-bold text-brown-900 mb-6">Quick Actions</h2>
+                <h2 className="text-3xl font-black text-neo-black mb-6 uppercase flex items-center gap-3">
+                    <span className="w-4 h-4 bg-neo-black"></span>
+                    Quick Actions
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <AdminActionCard
                         href="/admin/users"
                         title="User Management"
-                        description="Manage residents, roles, and permissions"
+                        description="Manage residents, roles, permissions"
                         icon={<Users size={32} />}
                         color="blue"
                     />
@@ -124,7 +117,7 @@ export default function AdminDashboard() {
                         title="Menu Items"
                         description="Update food & beverage offerings"
                         icon={<Coffee size={32} />}
-                        color="mustard"
+                        color="yellow"
                     />
                     <AdminActionCard
                         href="/admin/gamification"
@@ -158,33 +151,36 @@ type ActionCardProps = {
     title: string;
     description: string;
     icon: React.ReactNode;
-    color: 'blue' | 'mustard' | 'purple' | 'green' | 'red';
+    color: 'blue' | 'yellow' | 'purple' | 'green' | 'red';
 };
 
 function AdminActionCard({ href, title, description, icon, color }: ActionCardProps) {
     const colorClasses = {
-        blue: 'from-blue-100 to-blue-50 hover:from-blue-200 text-blue-700 border-blue-200',
-        mustard: 'from-mustard-100 to-mustard-50 hover:from-mustard-200 text-mustard-700 border-mustard-200',
-        purple: 'from-purple-100 to-purple-50 hover:from-purple-200 text-purple-700 border-purple-200',
-        green: 'from-green-100 to-green-50 hover:from-green-200 text-green-700 border-green-200',
-        red: 'from-red-100 to-red-50 hover:from-red-200 text-red-700 border-red-200',
+        blue: 'bg-white hover:bg-neo-blue hover:text-white',
+        yellow: 'bg-white hover:bg-neo-yellow hover:text-neo-black',
+        purple: 'bg-white hover:bg-purple-500 hover:text-white',
+        green: 'bg-white hover:bg-neo-green hover:text-neo-black',
+        red: 'bg-white hover:bg-neo-pink hover:text-white',
     };
 
     return (
         <Link href={href} className="group block">
-            <Card className={`bg-gradient-to-br ${colorClasses[color]} border-2 shadow-lg hover:shadow-xl transition-all`}>
+            <div className={`
+                border-4 border-neo-black p-6 shadow-neo transition-all group-hover:shadow-neo-lg group-hover:translate-x-[-2px] group-hover:translate-y-[-2px]
+                ${colorClasses[color]}
+            `}>
                 <div className="flex items-center justify-between">
                     <div className="flex-1">
-                        <div className="mb-3">{icon}</div>
-                        <h3 className="text-xl font-bold mb-2">{title}</h3>
-                        <p className="text-sm opacity-80 mb-4">{description}</p>
-                        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
-                            <span>Access</span>
-                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        <div className="mb-4 border-2 border-neo-black p-2 inline-block bg-white text-neo-black shadow-sm">{icon}</div>
+                        <h3 className="text-2xl font-black mb-1 uppercase">{title}</h3>
+                        <p className="text-sm font-bold opacity-70 mb-4 uppercase">{description}</p>
+                        <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide border-t-2 border-neo-black pt-2 inline-flex">
+                            <span>Access Module</span>
+                            <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
                         </div>
                     </div>
                 </div>
-            </Card>
+            </div>
         </Link>
     );
 }

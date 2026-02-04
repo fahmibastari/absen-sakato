@@ -11,34 +11,34 @@ const config: Config = {
             colors: {
                 background: "var(--background)",
                 foreground: "var(--foreground)",
-                // Modern Clean Color Scheme
-                brown: {
-                    50: "#EFEBE9",
-                    100: "#D7CCC8",
-                    200: "#BCAAA4",
-                    300: "#A1887F",
-                    400: "#8D6E63",
-                    500: "#795548",
-                    600: "#6D4C41",
-                    700: "#5D4037",
-                    800: "#4E342E",
-                    900: "#3E2723",
+                // Neo-Brutalism Palette
+                neo: {
+                    yellow: "#E4FF00", // Primary
+                    blue: "#3B82F6",   // Secondary
+                    pink: "#FF6B6B",   // Accent 1
+                    green: "#4ADE80",  // Accent 2
+                    white: "#FDFBF7",  // Neutral Background
+                    black: "#1A1A1A",  // Text/Borders
                 },
-                mustard: {
-                    50: "#FFF3E0",
-                    100: "#FFE0B2",
-                    200: "#FFCC80",
-                    300: "#FFB74D",
-                    400: "#FFA726",
-                    500: "#FF9800",
-                    600: "#FB8C00",
-                    700: "#F57C00",
-                    800: "#EF6C00",
-                    900: "#E65100",
-                },
+                // Maintaining some semantic naming for compatibility
+                primary: "#E4FF00",
+                secondary: "#3B82F6",
+            },
+            boxShadow: {
+                'neo': '4px 4px 0px 0px #1A1A1A',
+                'neo-sm': '2px 2px 0px 0px #1A1A1A',
+                'neo-lg': '8px 8px 0px 0px #1A1A1A',
+            },
+            borderRadius: {
+                'none': '0',
+                'sm': '0.125rem',
+                DEFAULT: '4px',
+                'md': '0.375rem',
+                'lg': '0.5rem',
+                'xl': '0.75rem', // Keeping some rounding for modern feel, but tighter
             },
             fontFamily: {
-                sans: ['var(--font-geist-sans)'],
+                sans: ['var(--font-geist-sans)'], // Keeping Geist for now, maybe change later
                 mono: ['var(--font-geist-mono)'],
             },
         },

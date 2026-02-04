@@ -1,11 +1,9 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Send, Loader2, Trash2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
+import { Loader2, Send, Trash2, User } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link'; // Still keeping Link for safe measure, but mostly using onClick
-import { UserPreviewModal } from '@/components/timeline/UserPreviewModal';
 
 interface Comment {
     id: string;
@@ -17,310 +15,143 @@ interface Comment {
         username: string;
         avatarUrl: string | null;
     };
-    userId: string;
 }
 
 interface CommentSectionProps {
     postId: string;
     currentUserId: string | null;
-    onCommentAdded?: () => void;
+    onCommentAdded: () => void;
 }
 
 export default function CommentSection({ postId, currentUserId, onCommentAdded }: CommentSectionProps) {
     const [comments, setComments] = useState<Comment[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
-    const [submitting, setSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Mention State
-    interface SearchUser {
-        id: string;
-        fullName: string;
-        username: string;
-        avatarUrl: string | null;
-    }
-
-    const [showMentions, setShowMentions] = useState(false);
-    const [mentionQuery, setMentionQuery] = useState('');
-    const [mentionResults, setMentionResults] = useState<SearchUser[]>([]);
-    const [cursorPosition, setCursorPosition] = useState(0);
-
-    // Profile Modal State
-    const [previewUsername, setPreviewUsername] = useState<string | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const openProfile = (username: string) => {
-        setPreviewUsername(username);
-        setIsModalOpen(true);
-    };
-
-    // RESTORED: Input Ref for focus and reply handling
-    const [inputEl, setInputEl] = useState<HTMLInputElement | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleReply = (username: string) => {
-        setNewComment(`@${username} `);
-        inputEl?.focus();
+    const fetchComments = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`/api/timeline/${postId}/comments`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` }
+            });
+            if (res.ok) {
+                setComments(await res.json());
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
-        if (!postId) return;
         fetchComments();
     }, [postId]);
 
-    async function fetchComments() {
-        setLoading(true);
-        setError(null);
-        try {
-            // Set a timeout for the fetch to avoid infinite hanging perception
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-            const res = await fetch(`/api/timeline/${postId}/comments`, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (res.ok) {
-                const data = await res.json();
-                setComments(data);
-            } else {
-                const text = await res.text();
-                console.error("Fetch error:", res.status, text);
-                setError(`Gagal memuat komentar (${res.status}). Coba lagi nanti.`);
-            }
-        } catch (error: any) {
-            console.error("Failed to fetch comments", error);
-            if (error.name === 'AbortError') {
-                setError("Koneksi lambat/timeout. Coba refresh.");
-            } else {
-                setError("Terjadi kesalahan jaringan.");
-            }
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if (showMentions && mentionQuery) {
-            const timeoutId = setTimeout(async () => {
-                try {
-                    const res = await fetch(`/api/users/search?q=${mentionQuery}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setMentionResults(data);
-                    }
-                } catch (error) {
-                    console.error("Search failed", error);
-                }
-            }, 300);
-            return () => clearTimeout(timeoutId);
-        } else {
-            setMentionResults([]);
-        }
-    }, [showMentions, mentionQuery]);
-
-    const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const text = e.target.value;
-        const newCursorPos = e.target.selectionStart || 0;
-        setNewComment(text);
-        setCursorPosition(newCursorPos);
-
-        const textBeforeCursor = text.slice(0, newCursorPos);
-        const lastAtPos = textBeforeCursor.lastIndexOf('@');
-
-        if (lastAtPos !== -1) {
-            const textAfterAt = textBeforeCursor.slice(lastAtPos + 1);
-            if (!textAfterAt.includes(' ')) {
-                setShowMentions(true);
-                setMentionQuery(textAfterAt);
-                return;
-            }
-        }
-        setShowMentions(false);
-    };
-
-    const selectMention = (user: SearchUser) => {
-        const textBeforeCursor = newComment.slice(0, cursorPosition);
-        const lastAtPos = textBeforeCursor.lastIndexOf('@');
-        const textAfterCursor = newComment.slice(cursorPosition);
-
-        const updatedComment = newComment.slice(0, lastAtPos) + `@${user.username} ` + textAfterCursor;
-
-        setNewComment(updatedComment);
-        setShowMentions(false);
-        setMentionResults([]);
-        inputEl?.focus();
-    };
-
-    // Render content with mentions
-    const renderContent = (text: string) => {
-        const parts = text.split(/(@\w+)/g);
-        return parts.map((part, index) => {
-            if (part.match(/^@\w+$/)) {
-                const username = part.substring(1);
-                return (
-                    <span
-                        key={index}
-                        onClick={() => openProfile(username)}
-                        className="text-blue-500 hover:underline font-medium cursor-pointer"
-                    >
-                        {part}
-                    </span>
-                );
-            }
-            return part;
-        });
-    };
-
-    async function handleSubmit(e: React.FormEvent) {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newComment.trim() || !currentUserId) return;
+        if (!newComment.trim()) return;
 
-        setSubmitting(true);
+        setIsSubmitting(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-
             const res = await fetch(`/api/timeline/${postId}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
+                    'Authorization': `Bearer ${session?.access_token}`
                 },
                 body: JSON.stringify({ content: newComment })
             });
 
             if (res.ok) {
-                const addedComment = await res.json();
-                setComments([...comments, addedComment]);
                 setNewComment('');
-                setShowMentions(false); // Reset mentions
-                if (onCommentAdded) onCommentAdded();
+                onCommentAdded();
+                fetchComments();
             }
-        } catch (error) {
-            console.error("Failed to post comment", error);
+        } catch (e) {
+            console.error(e);
         } finally {
-            setSubmitting(false);
+            setIsSubmitting(false);
         }
-    }
+    };
 
-    if (loading) {
-        return <div className="p-4 flex justify-center text-brown-400"><Loader2 className="animate-spin" size={20} /></div>;
-    }
+    const handleDelete = async (commentId: string) => {
+        if (!confirm('Hapus komentar ini?')) return;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            await fetch(`/api/timeline/${postId}/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${session?.access_token}` }
+            });
+            setComments(comments.filter(c => c.id !== commentId));
+        } catch (e) {
+            alert('Gagal menghapus komentar');
+        }
+    };
 
     return (
-        <div className="border-t border-gray-100 bg-white pt-2 pb-4 px-4 md:px-6">
-            {/* Comment List */}
-            <div className="space-y-4 mb-4">
-                {comments.length === 0 ? (
-                    <p className="text-xs text-center text-gray-400 py-4 italic">
-                        {error ? <span className="text-red-400">{error}</span> : "Belum ada komentar."}
-                    </p>
-                ) : (
-                    comments.map(comment => (
-                        <div key={comment.id} className="flex gap-3 text-[13px] group">
-                            <div className="flex-shrink-0">
-                                <div
-                                    onClick={() => openProfile(comment.user.username)}
-                                    className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden relative border border-gray-100 cursor-pointer"
-                                >
-                                    {comment.user.avatarUrl ? (
-                                        <Image
-                                            src={comment.user.avatarUrl}
-                                            alt={comment.user.fullName}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <span className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-[10px]">
-                                            {comment.user.fullName.charAt(0)}
+        <div className="space-y-6">
+            <h4 className="font-black text-neo-black uppercase text-sm border-b-2 border-neo-black pb-2">
+                Discussion ({comments.length})
+            </h4>
+
+            {isLoading ? (
+                <div className="flex justify-center p-4">
+                    <Loader2 className="animate-spin text-neo-black" size={24} />
+                </div>
+            ) : (
+                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {comments.map(comment => (
+                        <div key={comment.id} className="flex gap-3 items-start group">
+                            <div className="w-8 h-8 bg-gray-100 border-2 border-neo-black flex-shrink-0 flex items-center justify-center overflow-hidden">
+                                {comment.user.avatarUrl ? (
+                                    <Image src={comment.user.avatarUrl} alt={comment.user.fullName} width={32} height={32} className="object-cover w-full h-full" />
+                                ) : (
+                                    <span className="font-bold text-xs text-neo-black">{comment.user.fullName[0]}</span>
+                                )}
+                            </div>
+                            <div className="flex-1 bg-gray-50 border-2 border-transparent group-hover:border-gray-200 p-2 rounded transition-colors">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="font-black text-sm text-neo-black uppercase">{comment.user.fullName}</span>
+                                        <span className="text-[10px] text-gray-500 font-bold uppercase">
+                                            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: idLocale })}
                                         </span>
+                                    </div>
+                                    {currentUserId === comment.user.id && (
+                                        <button onClick={() => handleDelete(comment.id)} className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Trash2 size={14} />
+                                        </button>
                                     )}
                                 </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="leading-snug">
-                                    <span
-                                        onClick={() => openProfile(comment.user.username)}
-                                        className="font-semibold text-gray-900 mr-2 hover:underline cursor-pointer"
-                                    >
-                                        {comment.user.username}
-                                    </span>
-                                    <span className="text-gray-800 break-words">{renderContent(comment.content)}</span>
-                                </div>
-                                <div className="flex gap-4 mt-1">
-                                    <span className="text-[11px] text-gray-400">
-                                        {new Date(comment.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                    </span>
-                                    <button
-                                        onClick={() => handleReply(comment.user.username)}
-                                        className="text-[11px] font-semibold text-gray-400 hover:text-gray-600"
-                                    >
-                                        Balas
-                                    </button>
-                                </div>
+                                <p className="text-sm font-bold text-gray-700 mt-1 leading-relaxed">{comment.content}</p>
                             </div>
                         </div>
-                    ))
-                )}
-            </div>
-
-            {/* Input Form */}
-            <form onSubmit={handleSubmit} className="flex gap-3 items-center border-t border-gray-100 pt-3 relative">
-                {/* Mention Suggestions Popover */}
-                {showMentions && mentionResults.length > 0 && (
-                    <div className="absolute bottom-full left-10 mb-2 w-64 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-50">
-                        {mentionResults.map(user => (
-                            <button
-                                key={user.id}
-                                type="button"
-                                onClick={() => selectMention(user)}
-                                className="w-full text-left p-2 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-50 last:border-0"
-                            >
-                                <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden relative">
-                                    {user.avatarUrl ? (
-                                        <Image src={user.avatarUrl} alt={user.username} fill className="object-cover" />
-                                    ) : (
-                                        <span className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">
-                                            {user.fullName.charAt(0)}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs font-bold text-gray-800 truncate">{user.fullName}</p>
-                                    <p className="text-[10px] text-gray-500 truncate">@{user.username}</p>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                <div className="text-xl">😊</div>
-                <div className="flex-1 relative">
-                    <input
-                        ref={setInputEl}
-                        type="text"
-                        value={newComment}
-                        onChange={handleContentChange}
-                        placeholder="Tambahkan komentar..."
-                        className="w-full text-sm outline-none placeholder:text-gray-400 bg-transparent py-1"
-                        disabled={submitting}
-                        autoComplete="off"
-                    />
+                    ))}
+                    {comments.length === 0 && (
+                        <p className="text-center text-gray-400 font-bold uppercase text-xs">No comments yet.</p>
+                    )}
                 </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex gap-2">
+                <input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Write a comment..."
+                    className="flex-1 p-2 border-2 border-neo-black font-bold focus:ring-2 focus:ring-neo-yellow focus:outline-none"
+                    disabled={isSubmitting}
+                />
                 <button
                     type="submit"
-                    disabled={submitting || !newComment.trim()}
-                    className="text-blue-500 font-semibold text-sm disabled:opacity-30 hover:text-blue-600 transition-colors"
+                    disabled={isSubmitting || !newComment.trim()}
+                    className="bg-neo-black text-white px-4 border-2 border-neo-black hover:bg-neo-yellow hover:text-neo-black transition-colors disabled:opacity-50"
                 >
-                    {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Kirim'}
+                    {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} strokeWidth={3} />}
                 </button>
             </form>
-
-            <UserPreviewModal
-                username={previewUsername}
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-            />
         </div>
     );
 }

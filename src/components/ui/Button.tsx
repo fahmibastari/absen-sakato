@@ -12,13 +12,13 @@ export const Button: React.FC<ButtonProps> = ({
     className = '',
     ...props
 }) => {
-    const baseStyles = "w-full py-3 px-6 rounded-xl font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2";
+    const baseStyles = "w-full py-3 px-6 font-bold border-2 border-neo-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none";
 
     const variants = {
-        primary: "bg-coffee-300 text-coffee-900 hover:bg-coffee-200 shadow-lg shadow-coffee-300/20",
-        secondary: "bg-coffee-600 text-coffee-100 hover:bg-coffee-500",
-        outline: "border-2 border-coffee-300 text-coffee-300 hover:bg-coffee-300/10",
-        danger: "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20",
+        primary: "bg-neo-yellow text-neo-black shadow-neo hover:bg-[#D4EE00]",
+        secondary: "bg-neo-blue text-white shadow-neo hover:bg-blue-600",
+        outline: "bg-white text-neo-black shadow-neo hover:bg-gray-50",
+        danger: "bg-neo-pink text-white shadow-neo hover:bg-red-500",
     };
 
     return (
@@ -28,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
             {...props}
         >
             {isLoading ? (
-                <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                <span className="w-5 h-5 border-2 border-inherit border-t-transparent rounded-full animate-spin"></span>
             ) : children}
         </button>
     );

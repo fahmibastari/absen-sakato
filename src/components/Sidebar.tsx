@@ -14,7 +14,6 @@ export default function Sidebar() {
     const [hasNewPosts, setHasNewPosts] = useState(false);
 
     useEffect(() => {
-        // Check cache first to prevent flickering
         const cachedRole = localStorage.getItem('user_role');
         if (cachedRole) setRole(cachedRole);
 
@@ -38,10 +37,9 @@ export default function Sidebar() {
             }
         }
         checkRole();
-    }, [pathname]); // Re-check on path change to be safe, but rely on cache
+    }, [pathname]);
 
     useEffect(() => {
-        // Poll for new posts status
         async function checkStatus() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
@@ -59,7 +57,7 @@ export default function Sidebar() {
         }
 
         checkStatus();
-        const interval = setInterval(checkStatus, 30000); // Check every 30s
+        const interval = setInterval(checkStatus, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -74,96 +72,107 @@ export default function Sidebar() {
 
     const isActive = (path: string) => pathname === path;
 
+    const navItemClass = (path: string) => `
+        flex items-center gap-3 px-4 py-3 border-2 border-transparent transition-all font-bold uppercase tracking-wide
+        ${isActive(path)
+            ? 'bg-neo-yellow text-neo-black border-neo-black shadow-[4px_4px_0px_#000] translate-x-[-2px] translate-y-[-2px]'
+            : 'text-gray-500 hover:text-neo-black hover:bg-gray-100 hover:border-neo-black'
+        }
+    `;
+
+    const mobileNavItemClass = (path: string) => `
+        flex flex-col items-center gap-1 p-2 border-2 border-transparent transition-all
+        ${isActive(path)
+            ? 'bg-neo-yellow text-neo-black border-neo-black shadow-neo-sm'
+            : 'text-gray-500'
+        }
+    `;
+
     return (
         <>
-            {/* Mobile Bottom Nav - Modern White */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-brown-200 p-3 z-50 shadow-lg">
+            {/* Mobile Bottom Nav */}
+            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t-4 border-neo-black p-2 z-50">
                 <div className="flex justify-around items-center max-w-md mx-auto">
-                    <Link href="/dashboard" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/dashboard') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
-                        <Home size={20} />
-                        <span className="text-[10px] font-medium">Home</span>
+                    <Link href="/dashboard" className={mobileNavItemClass('/dashboard')}>
+                        <Home size={20} strokeWidth={2.5} />
                     </Link>
-                    <Link href="/leaderboard" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/leaderboard') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
-                        <Trophy size={20} />
-                        <span className="text-[10px] font-medium">Ranking</span>
+                    <Link href="/leaderboard" className={mobileNavItemClass('/leaderboard')}>
+                        <Trophy size={20} strokeWidth={2.5} />
                     </Link>
-                    <Link href="/timeline" className={`relative flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/timeline') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
-                        <MessageCircle size={20} />
-                        <span className="text-[10px] font-medium">Timeline</span>
+                    <Link href="/timeline" className={`${mobileNavItemClass('/timeline')} relative`}>
+                        <MessageCircle size={20} strokeWidth={2.5} />
                         {hasNewPosts && !isActive('/timeline') && (
-                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                            <span className="absolute top-1 right-1 w-3 h-3 bg-neo-pink border-2 border-white rounded-full animate-bounce"></span>
                         )}
                     </Link>
-                    <Link href="/history" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/history') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
-                        <History size={20} />
-                        <span className="text-[10px] font-medium">History</span>
+                    <Link href="/history" className={mobileNavItemClass('/history')}>
+                        <History size={20} strokeWidth={2.5} />
                     </Link>
-                    <Link href="/profile" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive('/profile') ? 'bg-mustard-100 text-mustard-700' : 'text-brown-500'}`}>
-                        <User size={20} />
-                        <span className="text-[10px] font-medium">Profile</span>
+                    <Link href="/profile" className={mobileNavItemClass('/profile')}>
+                        <User size={20} strokeWidth={2.5} />
                     </Link>
                     {role === 'ADMIN' && (
-                        <Link href="/admin" className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${pathname.startsWith('/admin') ? 'bg-red-100 text-red-600' : 'text-brown-500'}`}>
-                            <Shield size={20} />
-                            <span className="text-[10px] font-medium">Admin</span>
+                        <Link href="/admin" className={mobileNavItemClass('/admin')}>
+                            <Shield size={20} strokeWidth={2.5} />
                         </Link>
                     )}
                 </div>
             </nav>
 
-            {/* Desktop Sidebar - Modern White */}
-            <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-72 bg-white border-r border-brown-100 p-6 z-50 shadow-sm">
-                {/* Logo/Brand */}
-                <div className="mb-10">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-mustard-500 to-mustard-600 rounded-xl flex items-center justify-center">
-                            <Coffee className="text-white" size={24} />
+            {/* Desktop Sidebar */}
+            <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-72 bg-white border-r-4 border-neo-black p-6 z-50">
+                {/* Logo */}
+                <div className="mb-10 p-4 bg-neo-black text-white shadow-neo">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-neo-yellow border-2 border-white flex items-center justify-center transform rotate-3">
+                            <Coffee className="text-neo-black" size={24} strokeWidth={3} />
                         </div>
                         <div>
-                            <h1 className="font-bold text-xl text-brown-900">Sakato</h1>
-                            <p className="text-xs text-brown-500">Coffee Attendance</p>
+                            <h1 className="font-black text-2xl uppercase leading-none tracking-tighter">Sakato</h1>
+                            <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">Attendance</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Navigation */}
-                <div className="flex-1 space-y-1">
-                    <Link href="/dashboard" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/dashboard') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
-                        <Home size={20} />
+                <div className="flex-1 space-y-3">
+                    <Link href="/dashboard" className={navItemClass('/dashboard')}>
+                        <Home size={20} strokeWidth={3} />
                         <span>Dashboard</span>
-                        {isActive('/dashboard') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
                     </Link>
-                    <Link href="/leaderboard" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/leaderboard') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
-                        <Trophy size={20} />
-                        <span>Leaderboard</span>
-                        {isActive('/leaderboard') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
+                    <Link href="/leaderboard" className={navItemClass('/leaderboard')}>
+                        <Trophy size={20} strokeWidth={3} />
+                        <span>Ranking</span>
                     </Link>
-                    <Link href="/timeline" className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/timeline') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
-                        <MessageCircle size={20} />
+                    <Link href="/timeline" className={navItemClass('/timeline')}>
+                        <div className="relative">
+                            <MessageCircle size={20} strokeWidth={3} />
+                            {hasNewPosts && !isActive('/timeline') && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-neo-pink border-2 border-white rounded-full animate-ping"></div>
+                            )}
+                        </div>
                         <span>Timeline</span>
-                        {isActive('/timeline') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
-                        {hasNewPosts && !isActive('/timeline') && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-                        )}
                     </Link>
-                    <Link href="/history" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/history') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
-                        <History size={20} />
+                    <Link href="/history" className={navItemClass('/history')}>
+                        <History size={20} strokeWidth={3} />
                         <span>History</span>
-                        {isActive('/history') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
                     </Link>
-                    <Link href="/profile" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive('/profile') ? 'bg-mustard-100 text-mustard-700 font-semibold shadow-sm' : 'text-brown-700 hover:bg-brown-50'}`}>
-                        <User size={20} />
+                    <Link href="/profile" className={navItemClass('/profile')}>
+                        <User size={20} strokeWidth={3} />
                         <span>Profile</span>
-                        {isActive('/profile') && <div className="ml-auto w-1.5 h-1.5 bg-mustard-600 rounded-full"></div>}
                     </Link>
 
                     {role === 'ADMIN' && (
                         <>
-                            <div className="my-4 border-t border-brown-100"></div>
-                            <Link href="/admin" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${pathname.startsWith('/admin') ? 'bg-red-100 text-red-700 font-semibold shadow-sm' : 'text-red-600 hover:bg-red-50'}`}>
-                                <Shield size={20} />
+                            <div className="my-6 border-t-4 border-neo-black"></div>
+                            <Link href="/admin" className={`flex items-center gap-3 px-4 py-3 border-2 border-transparent transition-all font-bold uppercase tracking-wide
+                                ${pathname.startsWith('/admin')
+                                    ? 'bg-neo-pink text-white border-neo-black shadow-neo translate-x-[-2px] translate-y-[-2px]'
+                                    : 'text-neo-pink hover:bg-neo-pink/10 hover:border-neo-pink'
+                                }
+                            `}>
+                                <Shield size={20} strokeWidth={3} />
                                 <span>Admin Panel</span>
-                                {pathname.startsWith('/admin') && <div className="ml-auto w-1.5 h-1.5 bg-red-600 rounded-full"></div>}
                             </Link>
                         </>
                     )}
@@ -172,10 +181,10 @@ export default function Sidebar() {
                 {/* Logout Button */}
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-brown-600 hover:bg-red-50 hover:text-red-600 transition-all mt-4 border border-brown-200"
+                    className="flex items-center gap-3 px-4 py-3 mt-4 font-bold uppercase text-gray-500 hover:text-white hover:bg-neo-black border-2 border-transparent hover:border-black transition-all"
                 >
-                    <LogOut size={20} />
-                    <span className="font-medium">Logout</span>
+                    <LogOut size={20} strokeWidth={3} />
+                    <span>Logout</span>
                 </button>
             </aside>
         </>

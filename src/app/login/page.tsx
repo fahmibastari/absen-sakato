@@ -61,72 +61,72 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex bg-neo-white bg-dots font-sans">
             {/* LEFT SIDE - BRANDING */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-mustard-600 via-mustard-500 to-brown-700 p-12 flex-col justify-between relative overflow-hidden">
-                {/* Decorative circles */}
-                <div className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-20 left-20 w-96 h-96 bg-brown-900/20 rounded-full blur-3xl"></div>
+            <div className="hidden lg:flex lg:w-1/2 bg-neo-yellow border-r-4 border-neo-black p-12 flex-col justify-between relative overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute top-20 right-20 w-48 h-48 bg-neo-white border-4 border-neo-black rounded-full shadow-neo-lg z-0"></div>
+                <div className="absolute bottom-20 left-20 w-32 h-32 bg-neo-blue border-4 border-neo-black transform rotate-12 shadow-neo z-0"></div>
 
                 <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
-                            <Coffee className="text-mustard-600" size={32} />
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-16 h-16 bg-white border-4 border-neo-black flex items-center justify-center shadow-neo hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+                            <Coffee className="text-neo-black" size={32} strokeWidth={3} />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-white">Sakato Coffee</h1>
-                            <p className="text-mustard-100 text-sm">Attendance System</p>
+                            <h1 className="text-4xl font-black text-neo-black uppercase tracking-tighter leading-none">Sakato<br />Coffee</h1>
                         </div>
                     </div>
                 </div>
 
                 <div className="relative z-10">
-                    <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-                        Track Your Coffee<br />Time, Effortlessly
+                    <h2 className="text-5xl font-black text-neo-black mb-6 leading-tight uppercase">
+                        Track Your<br />
+                        <span className="bg-neo-black text-neo-yellow px-2">Hustle.</span>
                     </h2>
-                    <p className="text-mustard-100 text-lg">
-                        Simple, modern attendance tracking for coffee shop teams. Check in, compete, and connect.
+                    <p className="text-xl font-bold text-neo-black border-l-4 border-neo-black pl-4">
+                        The ultimate attendance system for the coffee army. Check in, grind, repeat.
                     </p>
                 </div>
 
-                <div className="relative z-10 flex gap-8 text-white">
+                <div className="relative z-10 flex gap-12 text-neo-black">
                     <div>
-                        <div className="text-3xl font-bold">500+</div>
-                        <div className="text-mustard-100 text-sm">Check-ins</div>
+                        <div className="text-4xl font-black">500+</div>
+                        <div className="font-bold uppercase text-sm border-t-2 border-neo-black pt-1">Check-ins</div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold">50+</div>
-                        <div className="text-mustard-100 text-sm">Active Users</div>
+                        <div className="text-4xl font-black">50+</div>
+                        <div className="font-bold uppercase text-sm border-t-2 border-neo-black pt-1">Active Users</div>
                     </div>
                 </div>
             </div>
 
             {/* RIGHT SIDE - FORM */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-                <div className="w-full max-w-md">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+                <div className="w-full max-w-md bg-white border-4 border-neo-black p-8 shadow-[8px_8px_0px_#000]">
                     {/* Logo mobile */}
-                    <div className="lg:hidden flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 bg-mustard-500 rounded-xl flex items-center justify-center">
-                            <Coffee className="text-white" size={24} />
+                    <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
+                        <div className="w-14 h-14 bg-neo-yellow border-4 border-neo-black flex items-center justify-center shadow-neo">
+                            <Coffee className="text-neo-black" size={28} strokeWidth={3} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-brown-900">Sakato</h1>
-                            <p className="text-brown-500 text-sm">Coffee Shop Attendance</p>
+                            <h1 className="text-3xl font-black text-neo-black uppercase">Sakato</h1>
                         </div>
                     </div>
 
-                    <div className="mb-8">
-                        <h2 className="text-3xl font-bold text-brown-900 mb-2">Welcome Back</h2>
-                        <p className="text-brown-600">Sign in to continue to your dashboard</p>
+                    <div className="mb-8 text-center lg:text-left">
+                        <h2 className="text-4xl font-black text-neo-black mb-2 uppercase">Welcome Back</h2>
+                        <p className="text-gray-600 font-bold uppercase text-sm">Sign in to command center</p>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-6">
                         <Input
                             label="Email Address"
                             type="email"
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             placeholder="you@example.com"
+                            className="border-4 border-neo-black p-4 font-bold text-lg focus:shadow-neo transition-all rounded-none"
                         />
                         <Input
                             label="Password"
@@ -134,21 +134,30 @@ export default function LoginPage() {
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             placeholder="••••••••"
+                            className="border-4 border-neo-black p-4 font-bold text-lg focus:shadow-neo transition-all rounded-none"
                         />
                     </div>
 
-                    {msg && <p className="mt-4 text-center text-sm text-mustard-700 bg-mustard-50 p-3 rounded-lg border border-mustard-200">{msg}</p>}
+                    {msg && (
+                        <div className={`mt-6 text-center text-sm font-black uppercase p-4 border-4 border-neo-black shadow-neo relative z-50 ${msg.toLowerCase().includes('berhasil') ? 'bg-neo-green text-neo-black animate-bounce' : 'bg-neo-red text-white'}`}>
+                            {msg}
+                        </div>
+                    )}
 
-                    <Button onClick={login} isLoading={loading} className="w-full mt-6">
+                    <Button
+                        onClick={login}
+                        isLoading={loading}
+                        className="w-full mt-8 bg-neo-black text-white hover:bg-gray-800 border-4 border-neo-black shadow-neo hover:translate-y-[-2px] hover:shadow-neo-lg transition-all font-black uppercase text-lg py-6"
+                    >
                         Sign In
-                        <ArrowRight className="ml-2" size={18} />
+                        <ArrowRight className="ml-2" size={24} strokeWidth={3} />
                     </Button>
 
-                    <p className="text-center text-sm text-brown-600 mt-6">
-                        Don't have an account? <Link href="/register" className="text-mustard-600 font-semibold hover:underline">Create one</Link>
+                    <p className="text-center text-sm font-bold text-gray-600 mt-8 uppercase">
+                        Don't have an account? <Link href="/register" className="text-neo-blue hover:text-neo-black hover:underline decoration-4 underline-offset-4">Create one</Link>
                     </p>
                 </div>
             </div>
         </div>
     );
-}
+};

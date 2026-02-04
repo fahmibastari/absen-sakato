@@ -45,11 +45,11 @@ export default function AdminLayout({
 
     if (checking) {
         return (
-            <div className="min-h-screen bg-coffee-950 flex flex-col items-center justify-center text-coffee-100">
+            <div className="min-h-screen bg-neo-yellow flex flex-col items-center justify-center text-neo-black border-4 border-neo-black">
                 <div className="animate-spin mb-4">
-                    <Shield size={48} className="text-coffee-500" />
+                    <Shield size={64} className="text-neo-black stroke-[3px]" />
                 </div>
-                <p className="text-coffee-400 font-mono text-sm animate-pulse">Verifying Clearance...</p>
+                <p className="text-neo-black font-black text-2xl animate-pulse uppercase tracking-widest">VERIFYING ACCESS...</p>
             </div>
         );
     }

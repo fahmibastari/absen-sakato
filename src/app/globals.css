@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #3E2723;
-  --primary: #FF9800;
+  --background: #FDFBF7;
+  --foreground: #1A1A1A;
+  --primary: #E4FF00;
 }
 
 body {
@@ -15,52 +15,53 @@ body {
   overflow-x: hidden;
 }
 
-/* Clean Card Utilities */
-.clean-card {
-  background: #FFFFFF;
-  border: 1px solid #EFEBE9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
+/* Neo-Brutal Utilities */
+@layer components {
+  .neo-card {
+    @apply bg-white border-[3px] border-neo-black shadow-[4px_4px_0px_0px_#1A1A1A] transition-all duration-200;
+  }
 
-.clean-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  .neo-card:hover {
+    @apply translate-x-[-2px] translate-y-[-2px] shadow-[6px_6px_0px_0px_#1A1A1A];
+  }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FAFAFA;
+  background: #1A1A1A;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #BCAAA4;
-  border-radius: 4px;
+  background: #E4FF00;
+  border: 3px solid #1A1A1A;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF9800;
+  background: #FF6B6B;
 }
 
 /* Animations */
-@keyframes float {
+@keyframes marquee {
   0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
+    transform: translateX(0%);
   }
 
   100% {
-    transform: translateY(0px);
+    transform: translateX(-100%);
   }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Patterns */
+.bg-dots {
+  background-image: radial-gradient(#1A1A1A 2px, transparent 2px);
+  background-size: 20px 20px;
 }

@@ -68,18 +68,21 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
             <div id="qr-reader-video" className="w-full h-full object-cover"></div>
 
             {/* Overlay Frame */}
-            <div className="absolute inset-0 border-[30px] border-black/50 pointer-events-none z-10">
-                <div className="w-full h-full border-2 border-coffee-300 relative opacity-50">
-                    <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-coffee-300"></div>
-                    <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-coffee-300"></div>
-                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-coffee-300"></div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-coffee-300"></div>
+            <div className="absolute inset-0 border-[30px] border-neo-black/80 pointer-events-none z-10">
+                <div className="w-full h-full border-4 border-neo-yellow relative opacity-100 shadow-[0_0_20px_rgba(228,255,0,0.5)]">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-8 border-l-8 border-neo-yellow"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-8 border-r-8 border-neo-yellow"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-8 border-l-8 border-neo-yellow"></div>
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-8 border-r-8 border-neo-yellow"></div>
+
+                    {/* Scanning Line Animation */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-neo-pink shadow-[0_0_10px_#FF6B6B] animate-scan"></div>
                 </div>
             </div>
 
             {hasPermission === false && (
-                <div className="absolute inset-0 flex items-center justify-center text-white p-4 text-center">
-                    Izin kamera diperlukan untuk scan.
+                <div className="absolute inset-0 flex items-center justify-center text-white p-4 text-center font-bold bg-neo-black">
+                    CAMERA PERMISSION REQUIRED.
                 </div>
             )}
         </div>

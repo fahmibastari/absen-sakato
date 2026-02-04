@@ -89,71 +89,73 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex bg-neo-white bg-dots font-sans">
             {/* LEFT SIDE - BRANDING */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brown-700 via-brown-600 to-mustard-700 p-12 flex-col justify-between relative overflow-hidden">
-                {/* Decorative circles */}
-                <div className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-20 left-20 w-96 h-96 bg-mustard-500/20 rounded-full blur-3xl"></div>
+            <div className="hidden lg:flex lg:w-1/2 bg-neo-green border-r-4 border-neo-black p-12 flex-col justify-between relative overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute top-20 right-20 w-48 h-48 bg-neo-yellow border-4 border-neo-black rounded-none transform rotate-45 shadow-[8px_8px_0px_#000] z-0 opacity-50"></div>
+                <div className="absolute bottom-20 left-20 w-32 h-32 bg-neo-pink border-4 border-neo-black rounded-full shadow-neo z-0"></div>
 
                 <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
-                            <Coffee className="text-brown-700" size={32} />
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-16 h-16 bg-white border-4 border-neo-black flex items-center justify-center shadow-neo hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+                            <Coffee className="text-neo-black" size={32} strokeWidth={3} />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-white">Sakato Coffee</h1>
-                            <p className="text-brown-100 text-sm">Attendance System</p>
+                            <h1 className="text-4xl font-black text-neo-black uppercase tracking-tighter leading-none">Sakato<br />Coffee</h1>
                         </div>
                     </div>
                 </div>
 
                 <div className="relative z-10">
-                    <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-                        Join The Team,<br />Start Tracking Today
+                    <h2 className="text-5xl font-black text-neo-black mb-6 leading-tight uppercase">
+                        Join The<br />
+                        <span className="bg-neo-black text-neo-green px-2 border-2 border-white">Squad.</span>
                     </h2>
-                    <p className="text-brown-100 text-lg">
-                        Create your account in seconds and become part of the coffee community.
+                    <p className="text-xl font-bold text-neo-black border-l-4 border-neo-black pl-4">
+                        Create your account in seconds. Start tracking, start climbing the ranks.
                     </p>
                 </div>
 
-                <div className="relative z-10 text-white/80 text-sm">
-                    "Simple, intuitive, and makes attendance tracking actually enjoyable."
+                <div className="relative z-10 text-neo-black font-black uppercase text-xl">
+                    "Simple. Fast. Brutally Efficient."
                 </div>
             </div>
 
             {/* RIGHT SIDE - FORM */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-                <div className="w-full max-w-md">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+                <div className="w-full max-w-md bg-white border-4 border-neo-black p-8 shadow-[8px_8px_0px_#000]">
                     {/* Logo mobile */}
-                    <div className="lg:hidden flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 bg-brown-700 rounded-xl flex items-center justify-center">
-                            <Coffee className="text-white" size={24} />
+                    <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
+                        <div className="w-14 h-14 bg-neo-green border-4 border-neo-black flex items-center justify-center shadow-neo">
+                            <Coffee className="text-neo-black" size={28} strokeWidth={3} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-brown-900">Sakato</h1>
-                            <p className="text-brown-500 text-sm">Coffee Shop Attendance</p>
+                            <h1 className="text-3xl font-black text-neo-black uppercase">Sakato</h1>
                         </div>
                     </div>
 
-                    <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-brown-900 mb-2">Create Account</h2>
-                        <p className="text-brown-600">Fill in your details to get started</p>
+                    <div className="mb-6 text-center lg:text-left">
+                        <h2 className="text-4xl font-black text-neo-black mb-2 uppercase">Create Account</h2>
+                        <p className="text-gray-600 font-bold uppercase text-sm">Join the coffee revolution</p>
                     </div>
 
                     <div className="space-y-4">
                         {/* Avatar Upload */}
-                        <div className="flex justify-center">
-                            <label className="cursor-pointer group">
-                                <div className="w-24 h-24 rounded-full bg-brown-100 border-2 border-dashed border-brown-300 group-hover:border-mustard-500 overflow-hidden flex items-center justify-center transition-all">
+                        <div className="flex justify-center mb-6">
+                            <label className="cursor-pointer group relative">
+                                <div className="w-32 h-32 bg-gray-100 border-4 border-neo-black group-hover:bg-neo-yellow/20 overflow-hidden flex items-center justify-center transition-all shadow-neo">
                                     {file ? (
-                                        <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                                        <img src={URL.createObjectURL(file as Blob)} alt="Preview" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="text-center">
-                                            <Upload className="mx-auto text-brown-400 group-hover:text-mustard-500 transition-colors" size={24} />
-                                            <span className="text-xs text-brown-500 mt-1 block">Upload Photo</span>
+                                        <div className="text-center p-4">
+                                            <Upload className="mx-auto text-neo-black" size={32} strokeWidth={3} />
+                                            <span className="text-xs font-black text-neo-black mt-2 block uppercase">Upload Photo</span>
                                         </div>
                                     )}
+                                </div>
+                                <div className="absolute -bottom-2 -right-2 bg-neo-black text-white p-1 border-2 border-white">
+                                    <Upload size={16} />
                                 </div>
                                 <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                             </label>
@@ -165,12 +167,14 @@ export default function RegisterPage() {
                                 value={form.fullName}
                                 onChange={e => setForm({ ...form, fullName: e.target.value })}
                                 placeholder="John Doe"
+                                className="border-4 border-neo-black p-3 font-bold rounded-none focus:shadow-neo transition-all"
                             />
                             <Input
                                 label="Username *"
                                 value={form.username}
                                 onChange={e => setForm({ ...form, username: e.target.value })}
                                 placeholder="johndoe"
+                                className="border-4 border-neo-black p-3 font-bold rounded-none focus:shadow-neo transition-all"
                             />
                         </div>
                         <Input
@@ -179,6 +183,7 @@ export default function RegisterPage() {
                             value={form.email}
                             onChange={e => setForm({ ...form, email: e.target.value })}
                             placeholder="john@example.com"
+                            className="border-4 border-neo-black p-3 font-bold rounded-none focus:shadow-neo transition-all"
                         />
                         <Input
                             label="Password *"
@@ -186,6 +191,7 @@ export default function RegisterPage() {
                             value={form.password}
                             onChange={e => setForm({ ...form, password: e.target.value })}
                             placeholder="••••••••"
+                            className="border-4 border-neo-black p-3 font-bold rounded-none focus:shadow-neo transition-all"
                         />
                         <TextArea
                             label="Bio (Optional)"
@@ -193,16 +199,21 @@ export default function RegisterPage() {
                             onChange={e => setForm({ ...form, bio: e.target.value })}
                             placeholder="Tell us about yourself..."
                             rows={2}
+                            className="border-4 border-neo-black p-3 font-bold rounded-none focus:shadow-neo transition-all resize-none"
                         />
                     </div>
 
-                    <Button onClick={submit} isLoading={loading} className="w-full mt-6">
+                    <Button
+                        onClick={submit}
+                        isLoading={loading}
+                        className="w-full mt-8 bg-neo-green text-neo-black hover:bg-green-400 border-4 border-neo-black shadow-neo hover:translate-y-[-2px] hover:shadow-neo-lg transition-all font-black uppercase text-lg py-4"
+                    >
                         Create Account
-                        <ArrowRight className="ml-2" size={18} />
+                        <ArrowRight className="ml-2" size={24} strokeWidth={3} />
                     </Button>
 
-                    <p className="text-center text-sm text-brown-600 mt-6">
-                        Already have an account? <Link href="/login" className="text-mustard-600 font-semibold hover:underline">Sign in</Link>
+                    <p className="text-center text-sm font-bold text-gray-600 mt-6 uppercase">
+                        Already have an account? <Link href="/login" className="text-neo-blue hover:text-neo-black hover:underline decoration-4 underline-offset-4">Sign in</Link>
                     </p>
                 </div>
             </div>

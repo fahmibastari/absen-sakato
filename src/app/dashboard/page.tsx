@@ -33,7 +33,7 @@ export default function DashboardPage() {
                 return;
             }
 
-            // Parallel Data Fetching (Waterfall Fix)
+            // Parallel Data Fetching
             const fetchMe = fetch('/api/attendance/me', {
                 headers: { Authorization: `Bearer ${session.access_token}` }
             }).then(res => res.ok ? res.json() : null);
@@ -118,95 +118,108 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-brown-50 via-white to-mustard-50 pb-24 md:pl-72 pt-8 px-6">
-            {/* Welcome Header */}
-            <div className="mb-8">
-                <h1 className="text-4xl font-bold text-brown-900 mb-1">
-                    Welcome back, <span className="text-mustard-600">{userName}</span>
+        <div className="min-h-screen bg-neo-white pb-24 md:pl-72 pt-8 px-6 font-sans">
+            {/* Header */}
+            <div className="mb-8 border-b-4 border-neo-black pb-4">
+                <h1 className="text-5xl font-black text-neo-black uppercase tracking-tighter mb-2">
+                    DASHBOARD
                 </h1>
-                <p className="text-brown-600">Here's your attendance overview for today</p>
+                <p className="text-xl font-bold text-gray-600">
+                    Welcome back, <span className="bg-neo-yellow px-2 border-2 border-neo-black text-neo-black transform -rotate-1 inline-block">{userName}</span>
+                </p>
             </div>
 
-            {/* Stats Grid - 3 Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 {/* Status Card - Large */}
-                <Card className="md:col-span-2 bg-gradient-to-br from-mustard-500 to-mustard-600 text-white border-0 shadow-xl">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center h-full">
+                <div className={`md:col-span-2 border-4 border-neo-black shadow-neo-lg p-8 transition-all hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_#1A1A1A] relative overflow-hidden
+                    ${userState.isCheckedIn ? 'bg-neo-green' : 'bg-neo-yellow'}
+                `}>
+                    {/* Decorative Background Pattern */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-20 transform rotate-45 translate-x-16 -translate-y-16 pointer-events-none"></div>
+
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center h-full relative z-10">
                         <div>
-                            <p className="text-mustard-100 text-sm mb-2 font-medium">Current Status</p>
-                            <h2 className="text-3xl font-bold mb-2">
-                                {userState.isCheckedIn ? "Checked In" : "Not Active"}
+                            <p className="text-neo-black font-bold uppercase tracking-wider mb-2 border-b-2 border-neo-black inline-block">Current Status</p>
+                            <h2 className="text-5xl font-black mb-4 uppercase tracking-tighter text-neo-black">
+                                {userState.isCheckedIn ? "ONLINE" : "OFFLINE"}
                             </h2>
                             {userState.isCheckedIn && (
-                                <div className="flex items-center gap-2 text-mustard-100">
-                                    <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
-                                    <span className="text-sm">Live tracking active</span>
+                                <div className="flex items-center gap-2 text-neo-black font-bold animate-pulse">
+                                    <div className="w-4 h-4 bg-neo-black rounded-none"></div>
+                                    <span>TRACKING ACTIVE</span>
                                 </div>
                             )}
                         </div>
-                        <div className="mt-4 md:mt-0">
+                        <div className="mt-6 md:mt-0">
                             <Button
-                                variant={userState.isCheckedIn ? "danger" : "primary"}
                                 onClick={() => setIsScannerOpen(true)}
-                                className="bg-white text-mustard-700 hover:bg-mustard-50 shadow-lg"
+                                className={`shadow-neo border-4 border-neo-black font-black uppercase py-4 px-8 text-xl hover:translate-y-[-2px] hover:shadow-neo-lg transition-all
+                                    ${userState.isCheckedIn ? 'bg-neo-black text-white hover:bg-gray-800' : 'bg-white text-neo-black hover:bg-gray-100'}
+                                `}
                             >
-                                <QrCode className="mr-2" size={20} />
-                                {userState.isCheckedIn ? "Scan to Check Out" : "Scan to Check In"}
+                                <QrCode className="mr-2" size={24} strokeWidth={3} />
+                                {userState.isCheckedIn ? "SCAN OUT" : "SCAN IN"}
                             </Button>
                         </div>
                     </div>
-                </Card>
+                </div>
 
                 {/* Quick Stats Card */}
-                <Card className="bg-white border-brown-100 shadow-lg">
+                <Card className="bg-neo-blue text-white">
                     <div className="flex flex-col justify-between h-full">
                         <div>
-                            <div className="flex items-center gap-2 text-brown-600 mb-3">
-                                <Users size={18} />
-                                <span className="text-sm font-medium">Active Now</span>
+                            <div className="flex items-center gap-2 text-white mb-4">
+                                <Users size={24} className="stroke-2" />
+                                <span className="text-sm font-black uppercase">Active Personnel</span>
                             </div>
-                            <div className="text-4xl font-bold text-brown-900">{liveUsers.length}</div>
+                            <div className="text-6xl font-black">{liveUsers.length}</div>
                         </div>
-                        <div className="mt-4 text-sm text-green-600 flex items-center gap-1">
-                            <TrendingUp size={14} />
-                            <span>People currently checked in</span>
+                        <div className="mt-4 text-sm font-bold flex items-center gap-2 border-t-2 border-white/20 pt-4">
+                            <TrendingUp size={16} />
+                            <span>ON THE GRID</span>
                         </div>
                     </div>
                 </Card>
             </div>
 
-            {/* Main Content - 2 Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Live Sessions - Takes 2 columns */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-brown-900 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-                            Live Sessions
+            {/* Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Live Sessions */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between border-b-4 border-neo-black pb-2">
+                        <h3 className="text-3xl font-black text-neo-black uppercase flex items-center gap-3">
+                            <span className="w-4 h-4 bg-neo-pink border-2 border-neo-black animate-pulse"></span>
+                            Live Feed
                         </h3>
-                        <span className="text-sm text-brown-500">{liveUsers.length} active</span>
+                        <span className="font-bold bg-neo-black text-white px-3 py-1 text-xs border-2 border-neo-black shadow-[2px_2px_0px_#000]">{liveUsers.length} ACTIVE</span>
                     </div>
-                    <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-6">
-                        <LiveSessionList users={liveUsers} />
-                    </div>
+
+                    {/* Render List Directly - No White Wrapper */}
+                    <LiveSessionList users={liveUsers} />
                 </div>
 
-                {/* Today's History - Sidebar */}
+                {/* History Sidebar */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-brown-900 flex items-center gap-2">
-                            <Clock size={20} />
-                            Riwayat Aktivitas
+                    <div className="flex items-center justify-between border-b-4 border-neo-black pb-2">
+                        <h3 className="text-2xl font-black text-neo-black uppercase flex items-center gap-2">
+                            <Clock size={24} className="stroke-[3px]" />
+                            History
                         </h3>
                     </div>
-                    <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-6">
-                        <TodayHistoryList items={todayHistory} />
+                    <div className="neo-card p-0">
+                        <div className="bg-neo-yellow border-b-4 border-neo-black p-3 font-bold text-center uppercase text-sm">
+                            Today's Log
+                        </div>
+                        <div className="p-4">
+                            <TodayHistoryList items={todayHistory} />
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Scanner Modal */}
-            <Modal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} title="Scan QR Code">
+            <Modal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} title="SCAN QR ACCESS">
                 {isScannerOpen && <QRScanner onScan={onScanSuccess} />}
             </Modal>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/Card";
-import { Clock, User, LogOut, Loader2, Save } from "lucide-react";
+import { Clock, User, LogOut, Loader2, Save, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -42,12 +42,8 @@ export default function AdminSessionsPage() {
     }, []);
 
     const handleOpenModal = (session: Session) => {
-        // Set default checkout time to now, but formatted for input datetime-local
         const now = new Date();
-        // Adjust to local ISO string somewhat manually to handle timezone offset for the input value
-        // Or simpler: just use current local time
         const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-
         setCheckoutTime(localIso);
         setSelectedSession(session);
     };
@@ -68,9 +64,8 @@ export default function AdminSessionsPage() {
 
             if (!res.ok) throw new Error("Failed to checkout");
 
-            // Success
             setSelectedSession(null);
-            fetchSessions(); // Refresh list
+            fetchSessions();
         } catch (error) {
             alert("Gagal melakukan checkout manual");
         } finally {
@@ -79,98 +74,105 @@ export default function AdminSessionsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6 md:pl-72 pt-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-brown-900 mb-1">Active Sessions</h1>
-                <p className="text-brown-600">Manual checkout for users who forgot</p>
+        <div className="min-h-screen bg-neo-blue bg-dots p-6 md:pl-72 pt-8 font-sans">
+            <div className="mb-8 bg-white border-4 border-neo-black p-6 shadow-neo">
+                <h1 className="text-4xl font-black text-neo-black mb-1 uppercase tracking-tighter">Active Sessions</h1>
+                <p className="text-gray-600 font-bold uppercase">Manual overrides & Monitoring</p>
             </div>
 
             {loading ? (
                 <div className="flex justify-center p-12">
-                    <Loader2 className="animate-spin text-mustard-600" size={32} />
+                    <Loader2 className="animate-spin text-white" size={64} />
                 </div>
             ) : sessions.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
-                    <Clock className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                    <p className="text-gray-500">No active sessions right now.</p>
+                <div className="text-center py-12 bg-white border-4 border-neo-black shadow-neo-lg">
+                    <Clock className="mx-auto h-16 w-16 text-neo-black mb-4" strokeWidth={3} />
+                    <p className="font-black text-2xl uppercase text-neo-black">SECTOR CLEAR.</p>
+                    <p className="text-gray-600 font-bold uppercase">No active sessions detected.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {sessions.map((session) => (
-                        <Card key={session.id} className="p-4 flex flex-col justify-between border-l-4 border-l-green-500 hover:shadow-md transition-shadow">
+                        <div key={session.id} className="bg-white border-4 border-neo-black p-4 flex flex-col justify-between shadow-neo hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-neo-lg transition-all">
                             <div>
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                                <div className="flex items-center gap-3 mb-4 border-b-4 border-neo-black pb-4">
+                                    <div className="w-12 h-12 border-2 border-neo-black bg-gray-100 flex items-center justify-center overflow-hidden">
                                         {session.user.avatarUrl ? (
                                             <img src={session.user.avatarUrl} alt={session.user.fullName} className="w-full h-full object-cover" />
                                         ) : (
-                                            <User size={20} className="text-gray-400" />
+                                            <User size={24} className="text-neo-black" strokeWidth={3} />
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-900">{session.user.fullName}</h3>
-                                        <p className="text-xs text-gray-500">@{session.user.username}</p>
+                                        <h3 className="font-black text-neo-black uppercase leading-none text-lg">{session.user.fullName}</h3>
+                                        <p className="text-xs font-bold bg-neo-black text-white px-1 inline-block">@{session.user.username}</p>
                                     </div>
                                 </div>
 
-                                <div className="bg-green-50 p-2 rounded text-xs text-green-700 mb-4 flex items-center gap-2">
-                                    <Clock size={12} />
-                                    Check In: <span className="font-semibold">{format(new Date(session.checkIn), "d MMM, HH:mm", { locale: id })}</span>
+                                <div className="bg-neo-green/20 border-2 border-neo-black p-3 mb-4 flex items-center gap-2">
+                                    <Clock size={20} className="text-neo-black" strokeWidth={3} />
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-neo-black leading-none">CHECKED IN AT</span>
+                                        <span className="font-black text-neo-black text-lg leading-none">{format(new Date(session.checkIn), "HH:mm", { locale: id })}</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => handleOpenModal(session)}
-                                className="w-full py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-semibold flex items-center justify-center gap-2"
+                                className="w-full py-3 bg-neo-pink text-white border-2 border-neo-black font-black uppercase tracking-wider hover:bg-red-600 transition-colors flex items-center justify-center gap-2 shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                             >
-                                <LogOut size={16} />
-                                Manual Checkout
+                                <LogOut size={20} strokeWidth={3} />
+                                FORCE OUT
                             </button>
-                        </Card>
+                        </div>
                     ))}
                 </div>
             )}
 
             {/* Manual Checkout Modal */}
             {selectedSession && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Manual Checkout</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neo-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white border-4 border-neo-black shadow-[8px_8px_0px_#FFF] w-full max-w-md p-8 relative">
+                        <div className="absolute -top-4 -left-4 bg-neo-yellow border-4 border-neo-black px-4 py-1 transform -rotate-2">
+                            <h3 className="text-xl font-black uppercase">Emergency Exit</h3>
+                        </div>
 
-                        <div className="mb-6">
-                            <p className="text-sm text-gray-500 mb-1">User</p>
-                            <div className="font-semibold text-gray-900 bg-gray-50 p-2 rounded border border-gray-200">
+                        <div className="mt-4 mb-6">
+                            <p className="text-sm font-bold uppercase text-gray-500 mb-1">Target Agent</p>
+                            <div className="font-black text-xl text-neo-black bg-gray-100 p-2 border-2 border-neo-black">
                                 {selectedSession.user.fullName}
                             </div>
                         </div>
 
-                        <div className="mb-6">
-                            <label className="block text-sm text-gray-500 mb-1">Set Checkout Time</label>
+                        <div className="mb-8">
+                            <label className="block text-sm font-bold uppercase text-gray-500 mb-1">Override Time</label>
                             <input
                                 type="datetime-local"
                                 value={checkoutTime}
                                 onChange={(e) => setCheckoutTime(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mustard-500 focus:outline-none"
+                                className="w-full p-3 border-4 border-neo-black font-mono font-bold focus:ring-4 focus:ring-neo-yellow focus:outline-none"
                             />
-                            <p className="text-xs text-gray-400 mt-1">
-                                Caution: Duration will be calculated based on this time.
+                            <p className="text-xs font-bold text-neo-pink mt-2 flex items-center gap-1">
+                                <AlertTriangle size={14} />
+                                CAUTION: CHECKOUT TIME IS FINAL.
                             </p>
                         </div>
 
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex gap-4 justify-end">
                             <button
                                 onClick={() => setSelectedSession(null)}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm"
+                                className="px-6 py-3 font-bold uppercase hover:bg-gray-100 border-2 border-transparent hover:border-neo-black transition-all"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleCheckout}
                                 disabled={processing}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50"
+                                className="px-6 py-3 bg-neo-black text-white border-2 border-transparent hover:bg-neo-yellow hover:text-neo-black hover:border-neo-black font-black uppercase transition-all flex items-center gap-2 disabled:opacity-50"
                             >
-                                {processing ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                                Confirm Checkout
+                                {processing ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                                CONFIRM
                             </button>
                         </div>
                     </div>

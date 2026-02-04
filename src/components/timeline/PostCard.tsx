@@ -1,41 +1,39 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
+import { MessageCircle, Heart, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { User, MessageCircle, Heart, Trash2, Loader2 } from 'lucide-react';
+import { id as idLocale } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
-import { UserPreviewModal } from '@/components/timeline/UserPreviewModal';
-import CommentSection from '@/components/timeline/CommentSection';
+import CommentSection from './CommentSection'; // Fixed import path if needed, usually it is default export
+import { UserPreviewModal } from './UserPreviewModal';
+import Image from 'next/image';
+
+interface Post {
+    id: string;
+    content: string;
+    createdAt: string;
+    likeCount: number;
+    commentCount: number;
+    isLiked: boolean;
+    user: {
+        id: string;
+        fullName: string;
+        username: string;
+        avatarUrl: string | null;
+    };
+}
 
 interface PostCardProps {
-    post: {
-        id: string;
-        content: string;
-        createdAt: string;
-        likeCount: number;
-        commentCount: number;
-        isLiked: boolean;
-        user: {
-            id: string;
-            fullName: string;
-            username: string;
-            avatarUrl: string | null;
-        };
-    };
-    currentUserId?: string | null;
+    post: Post;
+    currentUserId: string | null;
     onDelete?: () => void;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelete }) => {
-    const [isLiked, setIsLiked] = React.useState(post.isLiked);
-    const [likeCount, setLikeCount] = React.useState(post.likeCount);
-    const [commentCount, setCommentCount] = React.useState(post.commentCount || 0);
-    const [isAnimating, setIsAnimating] = React.useState(false);
-    const [isDeleting, setIsDeleting] = React.useState(false);
-
-    // Comment Toggle & Cache State
-    const [showComments, setShowComments] = React.useState(false);
-    const [hasFetchedComments, setHasFetchedComments] = React.useState(false);
+    const [isLiked, setIsLiked] = useState(post.isLiked);
+    const [likeCount, setLikeCount] = useState(post.likeCount);
+    const [commentCount, setCommentCount] = useState(post.commentCount);
+    const [showComments, setShowComments] = useState(false);
 
     // Profile Modal State
     const [previewUsername, setPreviewUsername] = useState<string | null>(null);
@@ -46,85 +44,40 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
         setIsModalOpen(true);
     };
 
-    const toggleComments = () => {
-        if (!showComments && !hasFetchedComments) {
-            setHasFetchedComments(true);
-        }
-        setShowComments(!showComments);
-    };
-
     const handleLike = async () => {
-        // Optimistic update
+        if (!currentUserId) return;
         const newIsLiked = !isLiked;
         setIsLiked(newIsLiked);
         setLikeCount(prev => newIsLiked ? prev + 1 : prev - 1);
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 300);
 
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return; // Should prompt login in real app
-
-            const res = await fetch(`/api/timeline/${post.id}/like`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
-            });
-
-            if (!res.ok) {
-                const text = await res.text();
-                console.error("Like API Error:", res.status, text);
-                throw new Error(`Failed to like: ${res.status} ${text}`);
-            }
-        } catch (error) {
-            console.error("Like failed:", error);
-            // Revert on error
-            setIsLiked(!newIsLiked);
-            setLikeCount(prev => !newIsLiked ? prev + 1 : prev - 1);
-        }
+        const { data: { session } } = await supabase.auth.getSession();
+        await fetch(`/api/timeline/${post.id}/like`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session?.access_token}` }
+        });
     };
 
     const handleDelete = async () => {
-        if (!confirm("Yakin mau di hapus?")) return;
-
-        setIsDeleting(true);
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-
-            const res = await fetch(`/api/timeline/${post.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
-            });
-
-            if (res.ok) {
-                if (onDelete) onDelete();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete post");
-            }
-        } catch (error) {
-            console.error("Delete failed", error);
-            alert("Error deleting post");
-        } finally {
-            setIsDeleting(false);
-        }
+        if (!confirm('Hapus postingan ini?')) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        await fetch(`/api/timeline/${post.id}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${session?.access_token}` }
+        });
+        if (onDelete) onDelete();
     };
 
-    // Parse content for mentions
+    // Render mentions
     const renderContent = (text: string) => {
         const parts = text.split(/(@\w+)/g);
         return parts.map((part, index) => {
             if (part.match(/^@\w+$/)) {
-                const username = part.substring(1); // Remove @
+                const username = part.substring(1);
                 return (
                     <span
                         key={index}
                         onClick={(e) => { e.stopPropagation(); openProfile(username); }}
-                        className="text-blue-500 font-medium cursor-pointer hover:underline"
+                        className="text-neo-blue font-black cursor-pointer hover:underline bg-neo-blue/10 px-1"
                     >
                         {part}
                     </span>
@@ -136,99 +89,73 @@ export const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onDelet
 
     return (
         <>
-            <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden p-0">
-                <div className="flex gap-3 md:gap-4 p-4 md:p-6 pb-2">
-                    {/* Avatar */}
-                    <div className="flex-shrink-0 cursor-pointer relative w-10 h-10 md:w-12 md:h-12" onClick={() => openProfile(post.user.username)}>
-                        {post.user.avatarUrl ? (
-                            <Image
-                                src={post.user.avatarUrl}
-                                alt={post.user.fullName}
-                                fill
-                                className="rounded-full object-cover border-2 border-white shadow-sm"
-                                sizes="(max-width: 768px) 40px, 48px"
-                            />
-                        ) : (
-                            <div className="w-full h-full rounded-full bg-mustard-100 flex items-center justify-center border-2 border-white shadow-sm">
-                                <User className="text-mustard-600" size={18} />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
-                            <div className="flex items-center gap-2 overflow-hidden">
+            <div className="bg-white border-4 border-neo-black p-4 md:p-6 mb-6 shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all animate-in slide-in-from-bottom-2">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="w-14 h-14 bg-gray-200 border-2 border-neo-black flex items-center justify-center overflow-hidden cursor-pointer"
+                            onClick={() => openProfile(post.user.username)}
+                        >
+                            {post.user.avatarUrl ? (
+                                <Image src={post.user.avatarUrl} alt={post.user.fullName} width={56} height={56} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="font-black text-2xl text-neo-black">{post.user.fullName[0]}</span>
+                            )}
+                        </div>
+                        <div>
+                            <div className="flex flex-col">
                                 <h3
-                                    className="font-bold text-brown-900 truncate cursor-pointer hover:underline"
+                                    className="font-black text-neo-black uppercase text-lg leading-none hover:underline cursor-pointer"
                                     onClick={() => openProfile(post.user.username)}
                                 >
                                     {post.user.fullName}
                                 </h3>
-                                <span className="text-xs md:text-sm text-brown-500 truncate">@{post.user.username}</span>
+                                <span className="text-xs font-bold bg-neo-black text-white px-1 w-fit mt-1">@{post.user.username}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] md:text-xs text-brown-400 flex-shrink-0">
-                                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                                </span>
-                                {currentUserId === post.user.id && (
-                                    <button
-                                        onClick={handleDelete}
-                                        disabled={isDeleting}
-                                        className="text-brown-400 hover:text-red-500 transition-colors p-1"
-                                        title="Delete post"
-                                    >
-                                        {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <p className="text-sm md:text-base text-brown-800 leading-relaxed whitespace-pre-wrap break-words">
-                            {renderContent(post.content)}
-                        </p>
-
-                        {/* Actions */}
-                        <div className="mt-3 flex gap-6 text-brown-400">
-                            {/* Like Button */}
-                            <button
-                                onClick={handleLike}
-                                className={`flex items-center gap-1.5 text-xs md:text-sm transition-all duration-200 group ${isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
-                            >
-                                <div className={`relative ${isAnimating ? 'scale-125' : 'scale-100'} transition-transform`}>
-                                    <Heart
-                                        size={18}
-                                        className={`${isLiked ? 'fill-current' : ''}`}
-                                    />
-                                </div>
-                                <span className="font-medium">{likeCount > 0 ? likeCount : 'Like'}</span>
-                            </button>
-
-                            {/* Comment Button */}
-                            <button
-                                onClick={toggleComments}
-                                className={`flex items-center gap-1.5 text-xs md:text-sm transition-all duration-200 hover:text-mustard-600 ${showComments ? 'text-mustard-600' : ''}`}
-                            >
-                                <MessageCircle size={18} className={showComments ? 'fill-current' : ''} />
-                                <span className="font-medium">
-                                    {commentCount > 0 ? `${commentCount} Comments` : 'Comment'}
-                                </span>
-                            </button>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">
+                                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: idLocale })}
+                            </p>
                         </div>
                     </div>
+                    {currentUserId === post.user.id && (
+                        <button onClick={handleDelete} className="text-gray-400 hover:text-neo-pink transition-colors">
+                            <Trash2 size={24} strokeWidth={3} />
+                        </button>
+                    )}
                 </div>
 
-                {/* Comment Section (Collapsible - Kept alive for performance) */}
-                {hasFetchedComments && (
-                    <div className={showComments ? 'block' : 'hidden'}>
+                <div className="text-neo-black font-bold text-lg mb-6 leading-relaxed whitespace-pre-wrap break-words border-l-4 border-gray-200 pl-4">
+                    {renderContent(post.content)}
+                </div>
+
+                <div className="flex items-center gap-6 border-t-4 border-neo-black pt-4">
+                    <button
+                        onClick={handleLike}
+                        className={`flex items-center gap-2 font-black uppercase transition-colors group ${isLiked ? 'text-neo-pink' : 'text-gray-500 hover:text-neo-black'}`}
+                    >
+                        <Heart size={24} strokeWidth={3} fill={isLiked ? "currentColor" : "none"} className={`group-active:scale-90 transition-transform ${isLiked ? 'animate-pulse_once' : ''}`} />
+                        <span>{likeCount}</span>
+                    </button>
+
+                    <button
+                        onClick={() => setShowComments(!showComments)}
+                        className="flex items-center gap-2 font-black uppercase text-gray-500 hover:text-neo-blue transition-colors group"
+                    >
+                        <MessageCircle size={24} strokeWidth={3} className="group-active:scale-90 transition-transform" />
+                        <span>{commentCount}</span>
+                    </button>
+                </div>
+
+                {showComments && (
+                    <div className="mt-6 pt-6 border-t-2 border-dashed border-gray-300">
                         <CommentSection
                             postId={post.id}
-                            currentUserId={currentUserId ?? null}
+                            currentUserId={currentUserId}
                             onCommentAdded={() => setCommentCount(prev => prev + 1)}
                         />
                     </div>
                 )}
-            </Card>
+            </div>
 
             <UserPreviewModal
                 username={previewUsername}

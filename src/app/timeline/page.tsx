@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { PostCard } from '@/components/timeline/PostCard';
 import CreatePostForm from '@/components/timeline/CreatePostForm';
 import { supabase } from '@/lib/supabase';
-import { Loader2, MessageCircle } from 'lucide-react';
+import { Loader2, MessageCircle, Star } from 'lucide-react';
 import { NotificationPermission } from '@/components/timeline/NotificationPermission';
 
 interface Post {
@@ -46,7 +46,6 @@ export default function TimelinePage() {
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data);
-                // Refresh status to clear the dot for current tab
                 fetchStatus();
             }
         } catch (error) {
@@ -73,7 +72,6 @@ export default function TimelinePage() {
 
     useEffect(() => {
         fetchPosts();
-        // Poll status every minute? Or just once. Just once is safer for now.
         fetchStatus();
     }, [activeTab]);
 
@@ -84,84 +82,80 @@ export default function TimelinePage() {
     const hasAnyNotification = status.hasNewPosts || status.hasNewAnnouncements;
 
     return (
-        <div className="max-w-2xl mx-auto p-4 md:p-8">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-brown-900 flex items-center gap-3 relative w-fit">
-                    <div className="p-2 bg-mustard-100 rounded-xl text-mustard-700 relative">
-                        <MessageCircle size={28} />
+        <div className="min-h-screen bg-neo-blue bg-dots font-sans">
+            <div className="max-w-2xl mx-auto p-4 md:p-8 md:pl-24"> {/* Added padding left for mobile sidebar clearance if needed, but sidebar is usually left. desktop is pl-72 usually handled by layout padding. Wait, formatting usually handles this. */}
+
+                {/* Header */}
+                <div className="mb-8 p-6 bg-white border-4 border-neo-black shadow-neo">
+                    <h1 className="text-4xl font-black text-neo-black uppercase tracking-tighter flex items-center gap-3">
+                        Sakatoday
                         {hasAnyNotification && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                            <span className="relative flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neo-pink opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-neo-pink border-2 border-black"></span>
                             </span>
                         )}
-                    </div>
-                    SAKAToday
-                </h1>
-                <p className="text-brown-500 mt-2">Sosmed aseli Sakato loh ya.</p>
-            </div>
+                    </h1>
+                    <p className="text-gray-600 font-bold uppercase mt-1">Asbun dulu gak sih</p>
+                </div>
 
-            {/* Sleek Tabs */}
-            <div className="flex border-b border-gray-200 mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-30 pt-2">
-                <button
-                    onClick={() => setActiveTab('POST')}
-                    className={`flex-1 py-3 text-sm font-semibold relative transition-colors ${activeTab === 'POST' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                    <div className="flex items-center justify-center gap-2">
-                        Timeline
-                        {status.hasNewPosts && activeTab !== 'POST' && (
-                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        )}
-                    </div>
-                    {activeTab === 'POST' && (
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-mustard-600 rounded-t-full" />
+                {/* Sleek Tabs */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                    <button
+                        onClick={() => setActiveTab('POST')}
+                        className={`py-4 border-4 border-neo-black font-black uppercase text-lg transition-all shadow-neo hover:translate-y-[-2px] hover:shadow-neo-lg
+                            ${activeTab === 'POST' ? 'bg-neo-yellow text-neo-black' : 'bg-white text-gray-500 hover:text-neo-black'}
+                        `}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            MESSAGE FEED
+                            {status.hasNewPosts && activeTab !== 'POST' && <span className="w-3 h-3 bg-neo-pink border-2 border-black rounded-full" />}
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('ANNOUNCEMENT')}
+                        className={`py-4 border-4 border-neo-black font-black uppercase text-lg transition-all shadow-neo hover:translate-y-[-2px] hover:shadow-neo-lg
+                            ${activeTab === 'ANNOUNCEMENT' ? 'bg-neo-pink text-white' : 'bg-white text-gray-500 hover:text-neo-black'}
+                        `}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            ANNOUNCEMENTS
+                            {status.hasNewAnnouncements && activeTab !== 'ANNOUNCEMENT' && <span className="w-3 h-3 bg-neo-yellow border-2 border-black rounded-full" />}
+                        </div>
+                    </button>
+                </div>
+
+                {/* Notification Permission */}
+                <NotificationPermission />
+
+                {/* Create Post */}
+                <div className="mb-8">
+                    <CreatePostForm onPostCreated={fetchPosts} defaultType={activeTab} />
+                </div>
+
+                {/* Feed */}
+                <div className="space-y-6">
+                    {isLoading ? (
+                        <div className="flex justify-center py-12">
+                            <Loader2 className="animate-spin text-white" size={64} />
+                        </div>
+                    ) : posts.length > 0 ? (
+                        posts.map(post => (
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                currentUserId={currentUserId}
+                                onDelete={() => handleDelete(post.id)}
+                            />
+                        ))
+                    ) : (
+                        <div className="text-center py-16 bg-white border-4 border-neo-black border-dashed">
+                            <MessageCircle size={64} className="mx-auto text-gray-300 mb-4" strokeWidth={3} />
+                            <h3 className="text-neo-black font-black text-2xl uppercase">SILENCE.</h3>
+                            <p className="text-gray-500 font-bold uppercase">Be the first to break it.</p>
+                        </div>
                     )}
-                </button>
-                <button
-                    onClick={() => setActiveTab('ANNOUNCEMENT')}
-                    className={`flex-1 py-3 text-sm font-semibold relative transition-colors ${activeTab === 'ANNOUNCEMENT' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                    <div className="flex items-center justify-center gap-2">
-                        Pengumuman
-                        {status.hasNewAnnouncements && activeTab !== 'ANNOUNCEMENT' && (
-                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        )}
-                    </div>
-                    {activeTab === 'ANNOUNCEMENT' && (
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-mustard-600 rounded-t-full" />
-                    )}
-                </button>
-            </div>
-
-            {/* Check Notification Permission */}
-            <NotificationPermission />
-
-            {/* Create Post - Context Aware */}
-            <CreatePostForm onPostCreated={fetchPosts} defaultType={activeTab} />
-
-            {/* Feed */}
-            <div className="space-y-1">
-                {isLoading ? (
-                    <div className="flex justify-center py-12">
-                        <Loader2 className="animate-spin text-mustard-600" size={32} />
-                    </div>
-                ) : posts.length > 0 ? (
-                    posts.map(post => (
-                        <PostCard
-                            key={post.id}
-                            post={post}
-                            currentUserId={currentUserId}
-                            onDelete={() => handleDelete(post.id)}
-                        />
-                    ))
-                ) : (
-                    <Card className="text-center py-12 border-dashed border-2 border-brown-200 bg-transparent shadow-none">
-                        <MessageCircle size={48} className="mx-auto text-brown-300 mb-3" />
-                        <h3 className="text-brown-600 font-semibold text-lg">No posts yet</h3>
-                        <p className="text-brown-400">Be the first to share something!</p>
-                    </Card>
-                )}
+                </div>
             </div>
         </div>
     );

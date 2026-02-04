@@ -150,32 +150,39 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-brown-50 via-white to-mustard-50 pb-24 md:pl-72 pt-8 px-6">
+        <div className="min-h-screen bg-neo-white bg-dots pb-24 md:pl-72 pt-8 px-6 font-sans">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-4xl font-bold text-brown-900 mb-1">Profile</h1>
-                <p className="text-brown-600">Manage your account information</p>
+            <div className="mb-12 border-b-4 border-neo-black pb-6 bg-white border-4 p-6 shadow-neo">
+                <h1 className="text-5xl font-black text-neo-black uppercase tracking-tighter mb-2">My Profile</h1>
+                <p className="text-xl font-bold text-gray-600 uppercase">Manage your identity.</p>
             </div>
 
             {/* Profile Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left - Avatar & Quick Info */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Avatar Card */}
-                    <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-8">
+                    <div className="bg-white border-4 border-neo-black shadow-neo-lg p-8 relative">
+                        {/* Badge */}
+                        {!isEditing && (
+                            <div className="absolute top-4 right-4 bg-neo-green text-neo-black border-2 border-neo-black px-2 py-0.5 text-xs font-black uppercase rotate-6">
+                                Verified
+                            </div>
+                        )}
+
                         <div className="flex flex-col items-center text-center">
                             <div className="relative group">
-                                <div className="w-32 h-32 rounded-full border-4 border-mustard-500 bg-brown-100 flex items-center justify-center relative mb-4 shadow-lg overflow-hidden">
+                                <div className="w-40 h-40 border-4 border-neo-black bg-gray-100 flex items-center justify-center relative mb-6 shadow-[8px_8px_0px_#000] overflow-hidden">
                                     {profile.avatarUrl ? (
-                                        <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                                        <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                                     ) : (
-                                        <User size={48} className="text-brown-400" />
+                                        <User size={64} className="text-neo-black" strokeWidth={1.5} />
                                     )}
                                 </div>
 
                                 {/* Edit Overlay */}
                                 {isEditing && (
-                                    <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors z-10">
+                                    <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-neo-black/50 transition-colors z-10 w-40 h-40 border-4 border-transparent hover:border-white">
                                         <input
                                             type="file"
                                             className="hidden"
@@ -183,34 +190,32 @@ export default function ProfilePage() {
                                             onChange={handleAvatarUpload}
                                             disabled={loading}
                                         />
-                                        <div className="text-white flex flex-col items-center gap-1 animate-fadeIn">
-                                            <Camera size={24} className="text-white drop-shadow-md" />
-                                            <span className="text-xs font-bold uppercase tracking-wider shadow-sm drop-shadow-md">Change</span>
+                                        <div className="text-white flex flex-col items-center gap-1 animate-bounce">
+                                            <Camera size={32} strokeWidth={3} className="text-neo-yellow drop-shadow-md" />
+                                            <span className="text-xs font-black uppercase bg-neo-black px-1 text-neo-yellow">Change</span>
                                         </div>
                                     </label>
                                 )}
                             </div>
 
-                            <h2 className="text-2xl font-bold text-brown-900 mb-1">{profile.fullName || 'Loading...'}</h2>
-                            <p className="text-brown-600 mb-4">@{profile.username || '...'}</p>
+                            <h2 className="text-3xl font-black text-neo-black mb-1 uppercase tracking-tight break-words w-full">{profile.fullName || 'Loading...'}</h2>
+                            <p className="text-white bg-neo-black px-2 text-sm font-bold uppercase mb-6 inline-block transform -rotate-2">@{profile.username || '...'}</p>
 
                             {!isEditing && (
-                                <div className="w-full space-y-3">
+                                <div className="w-full space-y-4">
                                     <Button
                                         onClick={() => setIsEditing(true)}
-                                        variant="outline"
-                                        className="w-full"
+                                        className="w-full bg-neo-blue text-white border-4 border-neo-black shadow-neo hover:translate-y-[-2px] hover:shadow-neo-lg font-black uppercase"
                                     >
-                                        <Edit2 size={16} className="mr-2" />
+                                        <Edit2 size={18} className="mr-2" strokeWidth={3} />
                                         Edit Profile
                                     </Button>
                                     <Button
                                         onClick={handleLogout}
-                                        variant="danger"
-                                        className="w-full bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
+                                        className="w-full bg-neo-pink text-white border-4 border-neo-black shadow-neo hover:translate-y-[-2px] hover:shadow-neo-lg font-black uppercase"
                                     >
-                                        <LogOut size={16} className="mr-2" />
-                                        Logout Account
+                                        <LogOut size={18} className="mr-2" strokeWidth={3} />
+                                        Logout
                                     </Button>
                                 </div>
                             )}
@@ -218,100 +223,117 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Stats Card */}
-                    <div className="bg-gradient-to-br from-mustard-500 to-mustard-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div className="text-sm font-medium text-mustard-100 mb-2">Member Since</div>
-                        <div className="text-2xl font-bold">
-                            {profile.joinedAt ? new Date(profile.joinedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'short' }) : '-'}
+                    <div className="bg-neo-yellow border-4 border-neo-black p-6 text-neo-black shadow-neo">
+                        <div className="text-xs font-black uppercase mb-2 border-b-2 border-neo-black pb-1 inline-block">One of us since</div>
+                        <div className="text-3xl font-black uppercase">
+                            {profile.joinedAt ? new Date(profile.joinedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long' }) : '-'}
                         </div>
                     </div>
                 </div>
 
                 {/* Right - Info & Edit Form */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white rounded-2xl border border-brown-100 shadow-lg p-8">
+                    <div className="bg-white border-4 border-neo-black shadow-neo-lg p-8 relative">
+                        {/* Decorative Corner */}
+                        <div className="absolute top-0 right-0 w-8 h-8 bg-neo-black"></div>
+                        <div className="absolute top-0 right-0 w-8 h-8 bg-white border-2 border-neo-black transform translate-x-2 -translate-y-2"></div>
+
                         {!isEditing ? (
                             /* View Mode */
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 <div>
-                                    <h3 className="text-lg font-bold text-brown-900 mb-6">Account Information</h3>
+                                    <h3 className="text-2xl font-black text-neo-black uppercase border-b-4 border-neo-black pb-2 inline-block">Details</h3>
                                 </div>
 
                                 <div className="grid gap-6">
-                                    <div className="flex items-start gap-4 p-4 bg-brown-50 rounded-xl">
-                                        <div className="w-10 h-10 rounded-lg bg-mustard-100 flex items-center justify-center flex-shrink-0">
-                                            <User className="text-mustard-600" size={20} />
+                                    <div className="flex items-start gap-4 p-4 border-2 border-neo-black bg-gray-50 hover:bg-neo-blue/10 transition-colors">
+                                        <div className="w-12 h-12 border-2 border-neo-black bg-neo-blue flex items-center justify-center flex-shrink-0 shadow-sm">
+                                            <User className="text-white" size={24} strokeWidth={3} />
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="text-sm text-brown-600 mb-1">Full Name</div>
-                                            <div className="font-semibold text-brown-900">{profile.fullName}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-4 p-4 bg-brown-50 rounded-xl">
-                                        <div className="w-10 h-10 rounded-lg bg-mustard-100 flex items-center justify-center flex-shrink-0">
-                                            <AtSign className="text-mustard-600" size={20} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="text-sm text-brown-600 mb-1">Username</div>
-                                            <div className="font-semibold text-brown-900">@{profile.username}</div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-bold text-gray-500 uppercase mb-1">Full Name</div>
+                                            <div className="text-xl font-black text-neo-black uppercase break-words">{profile.fullName}</div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-start gap-4 p-4 bg-brown-50 rounded-xl">
-                                        <div className="w-10 h-10 rounded-lg bg-mustard-100 flex items-center justify-center flex-shrink-0">
-                                            <Mail className="text-mustard-600" size={20} />
+                                    <div className="flex items-start gap-4 p-4 border-2 border-neo-black bg-gray-50 hover:bg-neo-yellow/10 transition-colors">
+                                        <div className="w-12 h-12 border-2 border-neo-black bg-neo-yellow flex items-center justify-center flex-shrink-0 shadow-sm">
+                                            <AtSign className="text-neo-black" size={24} strokeWidth={3} />
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="text-sm text-brown-600 mb-1">Email Address</div>
-                                            <div className="font-semibold text-brown-900">{profile.email}</div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-bold text-gray-500 uppercase mb-1">Username</div>
+                                            <div className="text-xl font-black text-neo-black uppercase break-all">@{profile.username}</div>
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-brown-50 rounded-xl">
-                                        <div className="text-sm text-brown-600 mb-2">Bio</div>
-                                        <div className="text-brown-900 italic">{profile.bio || 'No bio yet.'}</div>
+                                    <div className="flex items-start gap-4 p-4 border-2 border-neo-black bg-gray-50 hover:bg-neo-pink/10 transition-colors">
+                                        <div className="w-12 h-12 border-2 border-neo-black bg-neo-pink flex items-center justify-center flex-shrink-0 shadow-sm">
+                                            <Mail className="text-white" size={24} strokeWidth={3} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-bold text-gray-500 uppercase mb-1">Email Address</div>
+                                            <div className="text-xl font-black text-neo-black uppercase break-all">{profile.email}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 border-2 border-neo-black bg-white shadow-[4px_4px_0px_#000]">
+                                        <div className="text-xs font-bold text-neo-black bg-neo-green inline-block px-2 py-0.5 border-2 border-neo-black mb-3 uppercase">Bio</div>
+                                        <div className="text-xl font-bold text-neo-black italic leading-relaxed break-words whitespace-pre-wrap">"{profile.bio || 'No bio yet.'}"</div>
                                     </div>
                                 </div>
                             </div>
                         ) : (
                             /* Edit Mode */
                             <form onSubmit={saveProfile} className="space-y-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-lg font-bold text-brown-900">Edit Profile</h3>
+                                <div className="flex items-center justify-between mb-8 border-b-4 border-neo-black pb-4">
+                                    <h3 className="text-3xl font-black text-neo-black uppercase">Edit Mode</h3>
                                     <button
                                         type="button"
                                         onClick={() => setIsEditing(false)}
-                                        className="text-brown-600 hover:text-brown-900"
+                                        className="text-neo-black hover:bg-neo-red hover:text-white p-2 border-2 border-transparent hover:border-neo-black transition-all"
                                     >
-                                        <X size={20} />
+                                        <X size={32} strokeWidth={3} />
                                     </button>
                                 </div>
 
-                                <Input
-                                    label="Full Name"
-                                    value={profile.fullName}
-                                    onChange={e => setProfile({ ...profile, fullName: e.target.value })}
-                                />
-                                <Input
-                                    label="Username"
-                                    value={profile.username}
-                                    onChange={e => setProfile({ ...profile, username: e.target.value })}
-                                />
-                                <TextArea
-                                    label="Bio"
-                                    value={profile.bio}
-                                    onChange={e => setProfile({ ...profile, bio: e.target.value })}
-                                    rows={4}
-                                />
+                                <div className="space-y-6">
+                                    <Input
+                                        label="Full Name"
+                                        value={profile.fullName}
+                                        onChange={e => setProfile({ ...profile, fullName: e.target.value })}
+                                        className="border-4 border-neo-black p-4 font-bold text-lg"
+                                    />
+                                    <Input
+                                        label="Username"
+                                        value={profile.username}
+                                        onChange={e => setProfile({ ...profile, username: e.target.value })}
+                                        className="border-4 border-neo-black p-4 font-bold text-lg"
+                                    />
+                                    <TextArea
+                                        label="Bio"
+                                        value={profile.bio}
+                                        onChange={e => setProfile({ ...profile, bio: e.target.value })}
+                                        rows={4}
+                                        className="border-4 border-neo-black p-4 font-bold text-lg resize-none"
+                                    />
+                                </div>
 
-                                <div className="flex gap-3 pt-4">
-                                    <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="flex-1">
+                                <div className="flex gap-4 pt-8">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditing(false)}
+                                        className="flex-1 bg-white text-neo-black border-4 border-neo-black py-3 font-black uppercase hover:bg-gray-100 transition-colors shadow-neo active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                                    >
                                         Cancel
-                                    </Button>
-                                    <Button type="submit" variant="primary" disabled={loading} className="flex-1">
-                                        <Save size={18} className="mr-2" />
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="flex-1 bg-neo-green text-neo-black border-4 border-neo-black py-3 font-black uppercase hover:bg-green-400 transition-colors shadow-neo active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-2"
+                                    >
+                                        <Save size={20} strokeWidth={3} />
                                         {loading ? 'Saving...' : 'Save Changes'}
-                                    </Button>
+                                    </button>
                                 </div>
                             </form>
                         )}
