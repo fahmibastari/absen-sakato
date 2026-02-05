@@ -5,6 +5,7 @@ import { id as idLocale } from 'date-fns/locale';
 import { Loader2, Send, Trash2, User } from 'lucide-react';
 import Image from 'next/image';
 import MentionsInput from './MentionsInput';
+import { UserPreviewModal } from './UserPreviewModal';
 
 interface Comment {
     id: string;
@@ -29,6 +30,15 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
     const [isLoading, setIsLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Modal State
+    const [previewUsername, setPreviewUsername] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openProfile = (username: string) => {
+        setPreviewUsername(username);
+        setIsModalOpen(true);
+    };
 
     const fetchComments = async () => {
         try {
@@ -92,6 +102,26 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
         }
     };
 
+    // Render mentions logic
+    const renderContent = (text: string) => {
+        const parts = text.split(/(@\w+)/g);
+        return parts.map((part, index) => {
+            if (part.match(/^@\w+$/)) {
+                const username = part.substring(1);
+                return (
+                    <span
+                        key={index}
+                        onClick={(e) => { e.stopPropagation(); openProfile(username); }}
+                        className="text-neo-blue font-black cursor-pointer hover:underline bg-neo-blue/10 px-1 rounded-sm"
+                    >
+                        {part}
+                    </span>
+                );
+            }
+            return part;
+        });
+    };
+
     return (
         <div className="space-y-6">
             <h4 className="font-black text-neo-black uppercase text-sm border-b-2 border-neo-black pb-2">
@@ -106,7 +136,10 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                     {comments.map(comment => (
                         <div key={comment.id} className="flex gap-3 items-start group">
-                            <div className="w-8 h-8 bg-gray-100 border-2 border-neo-black flex-shrink-0 flex items-center justify-center overflow-hidden">
+                            <div
+                                className="w-8 h-8 bg-gray-100 border-2 border-neo-black flex-shrink-0 flex items-center justify-center overflow-hidden cursor-pointer"
+                                onClick={() => openProfile(comment.user.username)}
+                            >
                                 {comment.user.avatarUrl ? (
                                     <Image src={comment.user.avatarUrl} alt={comment.user.fullName} width={32} height={32} className="object-cover w-full h-full" />
                                 ) : (
@@ -116,7 +149,12 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                             <div className="flex-1 bg-gray-50 border-2 border-transparent group-hover:border-gray-200 p-2 rounded transition-colors">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-baseline gap-2">
-                                        <span className="font-black text-sm text-neo-black uppercase">{comment.user.fullName}</span>
+                                        <span
+                                            className="font-black text-sm text-neo-black uppercase cursor-pointer hover:underline"
+                                            onClick={() => openProfile(comment.user.username)}
+                                        >
+                                            {comment.user.fullName}
+                                        </span>
                                         <span className="text-[10px] text-gray-500 font-bold uppercase">
                                             {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: idLocale })}
                                         </span>
@@ -127,7 +165,9 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                                         </button>
                                     )}
                                 </div>
-                                <p className="text-sm font-bold text-gray-700 mt-1 leading-relaxed">{comment.content}</p>
+                                <p className="text-sm font-bold text-gray-700 mt-1 leading-relaxed whitespace-pre-wrap break-words">
+                                    {renderContent(comment.content)}
+                                </p>
                             </div>
                         </div>
                     ))}
@@ -153,6 +193,12 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} strokeWidth={3} />}
                 </button>
             </form>
+
+            <UserPreviewModal
+                username={previewUsername}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 }
