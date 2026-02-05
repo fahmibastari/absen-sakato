@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Send, Loader2, AlertCircle, Megaphone, PenTool } from 'lucide-react';
+import MentionsInput from './MentionsInput';
 
 interface CreatePostFormProps {
     onPostCreated: () => void;
@@ -63,10 +64,10 @@ export default function CreatePostForm({ onPostCreated, defaultType = 'POST' }: 
                     <label className="block text-neo-black font-black uppercase text-sm mb-2">
                         {type === 'ANNOUNCEMENT' ? 'Broadcast Announcement' : 'Share something'}
                     </label>
-                    <textarea
+                    <MentionsInput
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder={type === 'ANNOUNCEMENT' ? "IMPORTANT: ..." : "What's on your mind?"}
+                        onChange={setContent}
+                        placeholder={type === 'ANNOUNCEMENT' ? "IMPORTANT: ..." : "What's on your mind? (@ to tag)"}
                         className="w-full h-32 p-4 border-4 border-neo-black font-bold text-lg focus:outline-none focus:ring-4 focus:ring-neo-yellow focus:border-neo-black resize-none placeholder-gray-400 bg-gray-50"
                     />
                 </div>

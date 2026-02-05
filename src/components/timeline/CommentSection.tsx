@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { Loader2, Send, Trash2, User } from 'lucide-react';
 import Image from 'next/image';
+import MentionsInput from './MentionsInput';
 
 interface Comment {
     id: string;
@@ -136,18 +137,18 @@ export default function CommentSection({ postId, currentUserId, onCommentAdded }
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex gap-2">
-                <input
+            <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+                <MentionsInput
                     value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Write a comment..."
-                    className="flex-1 p-2 border-2 border-neo-black font-bold focus:ring-2 focus:ring-neo-yellow focus:outline-none"
+                    onChange={setNewComment}
+                    placeholder="Write a comment... (@ to tag)"
                     disabled={isSubmitting}
+                    className="w-full resize-none p-2 border-2 border-neo-black font-bold focus:ring-2 focus:ring-neo-yellow focus:outline-none min-h-[44px] max-h-[100px]"
                 />
                 <button
                     type="submit"
                     disabled={isSubmitting || !newComment.trim()}
-                    className="bg-neo-black text-white px-4 border-2 border-neo-black hover:bg-neo-yellow hover:text-neo-black transition-colors disabled:opacity-50"
+                    className="bg-neo-black text-white px-4 h-[44px] flex items-center justify-center border-2 border-neo-black hover:bg-neo-yellow hover:text-neo-black transition-colors disabled:opacity-50"
                 >
                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} strokeWidth={3} />}
                 </button>
